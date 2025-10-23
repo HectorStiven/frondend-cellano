@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Box,
-  Grid,
-  Paper,
-  Typography,
-  Card,
-  CardContent,
-} from "@mui/material";
+import { Box, Grid, Paper, Typography, Card, CardContent } from "@mui/material";
 import {
   School,
   ArrowBack,
@@ -21,19 +14,46 @@ export const RecoverPasswordPageInfo = () => {
   return (
     <Box
       sx={{
-        height: { xs: "auto", md: "100vh" }, // ✅ Auto en móvil, 100vh en escritorio
+        minHeight: "100vh",
         width: "100%",
-        display: "flex",
-        background: "linear-gradient(135deg, #14b8a6 0%, #06b6d4 50%, #3b82f6 100%)",
+        background:
+          "linear-gradient(135deg, #14b8a6 0%, #06b6d4 50%, #3b82f6 100%)",
         alignItems: "center",
         justifyContent: "center",
-        overflow: "hidden",
       }}
     >
+      {/* Botón Volver centrado arriba */}
+      {/* Botón Volver centrado arriba */}
+      <Box sx={{ display: "flex", justifyContent: "center", pt: 2, pb: 2 }}>
+        <Paper
+          elevation={6}
+          sx={{
+            display: "inline-flex",
+            gap: 1.5,
+            p: 1.5,
+            background: "rgba(255,255,255,0.15)",
+            backdropFilter: "blur(10px)",
+            borderRadius: 3,
+            border: "2px solid rgba(255,255,255,0.2)",
+            transition: "all 0.3s ease",
+            cursor: "pointer",
+            "&:hover": {
+              background: "rgba(255,255,255,0.25)",
+              transform: "translateY(-4px)",
+            },
+          }}
+        >
+          <ArrowBack />
+          <Typography variant="body1" fontWeight={600}>
+            Volver al inicio
+          </Typography>
+        </Paper>
+      </Box>
+
       <Grid
         container
         sx={{
-          height: { xs: "auto", md: "100vh" },
+          height: { xs: "auto", md: "90vh" },
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -57,71 +77,46 @@ export const RecoverPasswordPageInfo = () => {
         />
 
         {/* Contenido */}
-        <Box sx={{ position: "relative", zIndex: 1, width: "100%" }}>
-          {/* Botón volver */}
-          <Paper
-            elevation={6}
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 1.5,
-              p: 1.5,
-              mb: 4,
-              background: "rgba(255,255,255,0.15)",
-              backdropFilter: "blur(10px)",
-              borderRadius: 2,
-              border: "2px solid rgba(255,255,255,0.2)",
-              transition: "all 0.3s ease",
-              cursor: "pointer",
-              "&:hover": {
-                background: "rgba(255,255,255,0.25)",
-                transform: "translateX(-4px)",
-              },
-            }}
-          >
-            <ArrowBack />
-            <Typography variant="body1" fontWeight={600}>
-              Volver al inicio
-            </Typography>
-          </Paper>
-
-          {/* Encabezado */}
-          <Paper
-            elevation={8}
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 2,
-              p: 2,
-              mb: 4,
-              background: "rgba(255,255,255,0.15)",
-              backdropFilter: "blur(10px)",
-              borderRadius: 3,
-              border: "2px solid rgba(255,255,255,0.2)",
-            }}
-          >
-            <Box
+        <Box sx={{ position: "relative", zIndex: 1 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", pt: 2, pb: 2 }}>
+            {/* Encabezado */}
+            <Paper
+              elevation={8}
               sx={{
-                width: 56,
-                height: 56,
-                background: "rgba(255,255,255,0.25)",
-                borderRadius: 2,
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
-                justifyContent: "center",
+                gap: 2,
+                p: 2,
+                mb: 4,
+                background: "rgba(255,255,255,0.15)",
+                backdropFilter: "blur(10px)",
+                borderRadius: 3,
+                border: "2px solid rgba(255,255,255,0.2)",
               }}
             >
-              <School sx={{ fontSize: 32 }} />
-            </Box>
-            <Box>
-              <Typography variant="h5" fontWeight={700}>
-                Portal Educativo
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                Recuperación de Cuenta
-              </Typography>
-            </Box>
-          </Paper>
+              <Box
+                sx={{
+                  width: 56,
+                  height: 56,
+                  background: "rgba(255,255,255,0.25)",
+                  borderRadius: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <School sx={{ fontSize: 32 }} />
+              </Box>
+              <Box>
+                <Typography variant="h5" fontWeight={700}>
+                  Portal Educativo
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Recuperación de Cuenta
+                </Typography>
+              </Box>
+            </Paper>
+          </Box>
 
           {/* Título principal */}
           <Typography
@@ -175,7 +170,7 @@ export const RecoverPasswordPageInfo = () => {
                 desc: "Nuestro equipo está disponible 24/7 para ayudarte.",
               },
             ].map((item, i) => (
-              <Grid key={i} size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card
                   elevation={8}
                   sx={{
@@ -185,6 +180,7 @@ export const RecoverPasswordPageInfo = () => {
                     border: "2px solid rgba(255,255,255,0.2)",
                     color: "white",
                     transition: "all 0.3s ease",
+                    borderRadius: 3,
                     "&:hover": {
                       transform: "translateY(-6px)",
                       boxShadow: "0px 10px 24px rgba(0,0,0,0.25)",
@@ -197,7 +193,7 @@ export const RecoverPasswordPageInfo = () => {
                         width: 48,
                         height: 48,
                         background: "rgba(255,255,255,0.25)",
-                        borderRadius: 2,
+                        borderRadius: 3,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",

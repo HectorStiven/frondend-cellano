@@ -63,7 +63,7 @@ export const LoginPageInfo = () => {
           <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
             {/* Encabezado */}
             <Paper
-              elevation={8}
+              elevation={8  }
               sx={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -112,17 +112,7 @@ export const LoginPageInfo = () => {
             >
               Bienvenido a tu espacio de aprendizaje
             </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                mb: 6,
-                opacity: 0.95,
-                lineHeight: 1.6,
-                fontSize: { xs: "1rem", sm: "1.2rem" },
-              }}
-            >
-              Accede a tus clases, tareas, calificaciones y mucho más en un solo lugar.
-            </Typography>
+        
 
             {/* Instrucciones */}
             <Paper
@@ -157,44 +147,176 @@ export const LoginPageInfo = () => {
             </Paper>
 
             {/* Cuadrícula de tarjetas */}
-            <Grid container spacing={3} justifyContent="center">
-              {[
-                { icon: MenuBook, title: "Recursos", desc: "Material educativo digital" },
-                { icon: People, title: "Comunidad", desc: "Conecta con tu clase" },
-                { icon: EmojiEvents, title: "Logros", desc: "Sigue tu progreso" },
-                { icon: School, title: "Certificados", desc: "Obtén reconocimientos" },
-              ].map((item, index) => (
-                <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
-                  <Card
-                    elevation={6}
-                    sx={{
-                      height: "100%",
-                      background: "rgba(255,255,255,0.15)",
-                      backdropFilter: "blur(10px)",
-                      border: "2px solid rgba(255,255,255,0.2)",
-                      color: "white",
-                      textAlign: "center",
-                      p: 2,
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        transform: "translateY(-8px)",
-                        boxShadow: "0px 12px 32px rgba(0,0,0,0.3)",
-                      },
-                    }}
-                  >
-                    <CardContent>
-                      <item.icon sx={{ fontSize: 40, mb: 1 }} />
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
-                        {item.title}
-                      </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                        {item.desc}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+          
+
+
+
+
+
+
+
+
+
+
+
+
+<Grid container spacing={3} justifyContent="center">
+  {/* Tarjeta superior */}
+  <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+        <Card
+      elevation={6}
+      sx={{
+        height: 150,
+        width: 140,
+        margin: "auto",
+        background: "rgba(255,255,255,0.15)",
+        backdropFilter: "blur(10px)",
+        border: "2px solid rgba(255,255,255,0.2)",
+        color: "white",
+        textAlign: "center",
+        p: 0.5,
+        transition: "all 0.3s ease",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0px 6px 18px rgba(0,0,0,0.3)",
+        },
+      }}
+    >
+      <CardContent sx={{ p: 0.5 }}>
+        <MenuBook sx={{ fontSize: 24, mb: 0.5 }} />
+        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+          Recursos
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.9, fontSize: "0.7rem" }}>
+          Material educativo digital
+        </Typography>
+      </CardContent>
+    </Card>
+  </Grid>
+
+  {/* Tarjetas inferiores */}
+  <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>    <Card
+      elevation={6}
+      sx={{
+        height: 150,
+        width: 140,
+        margin: "auto",
+        background: "rgba(255,255,255,0.15)",
+        backdropFilter: "blur(10px)",
+        border: "2px solid rgba(255,255,255,0.2)",
+        color: "white",
+        textAlign: "center",
+        p: 0.5,
+        transition: "all 0.3s ease",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0px 6px 18px rgba(0,0,0,0.3)",
+        },
+      }}
+    >
+      <CardContent sx={{ p: 0.5 }}>
+        <People sx={{ fontSize: 24, mb: 0.5 }} />
+        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+          Comunidad
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.9, fontSize: "0.7rem" }}>
+          Conecta con tu clase
+        </Typography>
+      </CardContent>
+    </Card>
+  </Grid>
+
+  <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>    <Card
+      elevation={6}
+      sx={{
+        height: 150,
+        width: 140,
+        margin: "auto",
+        background: "rgba(255,255,255,0.15)",
+        backdropFilter: "blur(10px)",
+        border: "2px solid rgba(255,255,255,0.2)",
+        color: "white",
+        textAlign: "center",
+        p: 0.5,
+        transition: "all 0.3s ease",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0px 6px 18px rgba(0,0,0,0.3)",
+        },
+      }}
+    >
+      <CardContent sx={{ p: 0.5 }}>
+        <EmojiEvents sx={{ fontSize: 24, mb: 0.5 }} />
+        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+          Logros
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.9, fontSize: "0.7rem" }}>
+          Sigue tu progreso
+        </Typography>
+      </CardContent>
+    </Card>
+  </Grid>
+
+  <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+    <Card
+      elevation={6}
+      sx={{
+        height: 150,
+        width: 140,
+        margin: "auto",
+        background: "rgba(255,255,255,0.15)",
+        backdropFilter: "blur(10px)",
+        border: "2px solid rgba(255,255,255,0.2)",
+        color: "white",
+        textAlign: "center",
+        p: 0.5,
+        transition: "all 0.3s ease",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0px 6px 18px rgba(0,0,0,0.3)",
+        },
+      }}
+    >
+      <CardContent sx={{ p: 0.5 }}>
+        <School sx={{ fontSize: 24, mb: 0.5 }} />
+        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+          Certificados
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.9, fontSize: "0.7rem" }}>
+          Obtén reconocimientos
+        </Typography>
+      </CardContent>
+    </Card>
+  </Grid>
+</Grid>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             {/* Footer */}
             <Typography

@@ -8,6 +8,7 @@ import { AlertasContext } from "../Elements/Context/ContextModoDark";
 import { useContext } from "react";
 import { IndexMenu } from "../Inicio/Menu/IndexMenu";
 import { Sugerencias } from "../Inicio/SugerenciasCalificaciones/Sugerencias";
+import { CreditosPagos } from "../Inicio/CreditosPagos/CreditosPagos";
 
 export const RutasPrincipales = () => {
   const { modo_dark_numero } = useContext(AlertasContext);
@@ -33,6 +34,8 @@ export const RutasPrincipales = () => {
         <Route path="/MenuUsuario" element={<IndexMenu/>} />
 
         <Route path="/Sugerencias" element={<Sugerencias />} />
+
+        <Route path="/CreditosPagos" element={<CreditosPagos />} />
 
         <Route path="*" element={<Page404 />} />
       </Routes>

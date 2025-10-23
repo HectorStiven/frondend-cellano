@@ -34,7 +34,7 @@ export const Sugerencias = () => {
   };
 
   return (
-    <Box sx={{ p: 4, minHeight: '100vh', background: '#f5f5f5' }}>
+    <Box sx={{ p: 4, minHeight: '100vh' }}>
       <Grid container spacing={2} justifyContent="center">
         <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 4, borderRadius: 3, boxShadow: 4, textAlign: 'center' }}>

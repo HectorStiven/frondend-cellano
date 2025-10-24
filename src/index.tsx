@@ -6,15 +6,19 @@ import "primereact/resources/themes/saga-blue/theme.css"; // tema opcional
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import { AlertasProvider } from "./Elements/Context/ContextModoDark";
+import { Provider } from "react-redux";
+import { store } from "./store";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <AlertasProvider>
-      <App />
-    </AlertasProvider>
+    <Provider store={store}>
+      <AlertasProvider>
+        <App />
+      </AlertasProvider>
+    </Provider>
   </React.StrictMode>
 );
 

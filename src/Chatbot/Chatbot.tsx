@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Button, TextField, Box, Typography, Paper, Grid } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  CircularProgress,
+} from "@mui/material";
 import { styled } from "@mui/system";
 import { responseTree } from "./ChatBotDireccionamiento";
 import { Title } from "../Elements/Titulo/Titulo";
@@ -11,92 +19,89 @@ type Message = {
   content: string;
 };
 
-// Definir área de scroll con Material-UI y CSS personalizado
+// Área scroll del chat
 const ScrollArea = styled(Paper)({
   overflowY: "auto",
   maxHeight: "500px",
-  borderRadius: "8px",
-  padding: "16px",
+  borderRadius: "15px",
+  padding: "20px",
   marginBottom: "16px",
-  backgroundColor: "#f5f5f5",
+  backgroundColor: "#f9f9f9",
+  boxShadow: "inset 0 0 10px rgba(0,0,0,0.08)",
+  transition: "all 0.3s ease",
 });
 
-// Definir el tipo del árbol JSON
 type ResponseTree = {
   response: string;
-  options?: {
-    [key: string]: ResponseTree;
-  };
+  options?: { [key: string]: ResponseTree };
 };
-
-
 
 export const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [currentNode, setCurrentNode] = useState<ResponseTree>(responseTree.PruebaStiven);
+  const [isTyping, setIsTyping] = useState(false);
+  const [currentNode, setCurrentNode] = useState<ResponseTree>(
+    responseTree.PruebaStiven
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() === "") return;
 
-    // Añadir mensaje del usuario
     const userMessage: Message = { role: "user", content: input };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-
-    // Limpiar el input
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsTyping(true);
 
-    // Buscar la respuesta en el árbol JSON
     const responseNode = currentNode.options?.[input];
-    if (responseNode) {
-      setTimeout(() => {
+    setTimeout(() => {
+      if (responseNode) {
         const aiMessage: Message = {
           role: "assistant",
           content: responseNode.response,
         };
-        setMessages((prevMessages) => [...prevMessages, aiMessage]);
+        setMessages((prev) => [...prev, aiMessage]);
         setCurrentNode(responseNode);
-      }, 1000);
-    } else {
-      setTimeout(() => {
+      } else {
         const aiMessage: Message = {
           role: "assistant",
-          content: `No entiendo "${input}".`,
+          content: `No entiendo "${input}". ¿Podrías intentar otra palabra? 🤔`,
         };
-        setMessages((prevMessages) => [...prevMessages, aiMessage]);
-      }, 1000);
-    }
+        setMessages((prev) => [...prev, aiMessage]);
+      }
+      setIsTyping(false);
+    }, 1000);
   };
 
   return (
-    <Grid container spacing={4}sx={{ justifyContent: "center" , padding: "20px"}}>
+    <Grid
+      container
+      spacing={4}
+      sx={{ justifyContent: "center", padding: "20px" }}
+    >
+      <Grid size={{ xs: 12 }}>
+        <Title title="Chatbot de IA" />
+      </Grid>
+
       <Grid
-     size={6}
-        spacing={0}
+        size={{ xs: 12, md: 8 }}
         sx={{
           justifyContent: "center",
           alignItems: "center",
-          background: "#FAFAFA",
-          borderRadius: "15px",
-          p: "20px",
-          mb: "20px",
-          boxShadow: "0px 3px 6px #042F4A26",
+          background: "#FFFFFF",
+          borderRadius: "20px",
+          p: "30px",
+          boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
         }}
       >
-        <Grid size={12} >
-          <Title title="Chatbot de IA" />
-        </Grid>
-        <Grid>
-          {/* Área de scroll para los mensajes */}
-          <ScrollArea elevation={3}>
+        <Grid size={{ xs: 12 }}>
+          <ScrollArea elevation={2}>
             {messages.length === 0 ? (
               <Typography
-                variant="body1"
                 align="center"
-                sx={{ color: "grey.600" }}
+                sx={{ color: "grey.600", fontSize: "1rem" }}
               >
-                ¡Hola! Escribe un mensaje para comenzar la conversación.
+                💬 ¡Hola! Escribe un mensaje para comenzar la conversación.
               </Typography>
             ) : (
               messages.map((message, index) => (
@@ -105,17 +110,24 @@ export const Chatbot = () => {
                   sx={{
                     mb: 2,
                     textAlign: message.role === "user" ? "right" : "left",
+                    animation: "fadeIn 0.3s ease-in-out",
                   }}
                 >
                   <Box
                     sx={{
                       display: "inline-block",
-                      p: 1,
-                      borderRadius: "8px",
+                      p: 1.5,
+                      borderRadius:
+                        message.role === "user"
+                          ? "20px 20px 0px 20px"
+                          : "20px 20px 20px 0px",
                       bgcolor:
-                        message.role === "user" ? "primary.main" : "grey.300",
-                      color: message.role === "user" ? "white" : "text.primary",
+                        message.role === "user" ? "#1976d2" : "#e0e0e0",
+                      color: message.role === "user" ? "white" : "black",
                       maxWidth: "80%",
+                      wordWrap: "break-word",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                      fontSize: "0.95rem",
                     }}
                   >
                     {message.content}
@@ -123,9 +135,28 @@ export const Chatbot = () => {
                 </Box>
               ))
             )}
+
+            {/* Animación de escribiendo */}
+            {isTyping && (
+              <Box
+                sx={{
+                  textAlign: "left",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  mt: 1,
+                  ml: 1,
+                }}
+              >
+                <CircularProgress size={20} thickness={4} />
+                <Typography variant="body2" color="text.secondary">
+                  El asistente está escribiendo...
+                </Typography>
+              </Box>
+            )}
           </ScrollArea>
 
-          {/* Formulario de envío de mensaje */}
+          {/* Formulario de entrada */}
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -137,8 +168,24 @@ export const Chatbot = () => {
               placeholder="Escribe tu mensaje aquí..."
               variant="outlined"
               fullWidth
+              sx={{
+                borderRadius: "10px",
+                backgroundColor: "#fafafa",
+              }}
             />
-            <Button variant="contained" color="primary" type="submit">
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              sx={{
+                px: 3,
+                borderRadius: "12px",
+                textTransform: "none",
+                backgroundColor: "#1976d2",
+                fontWeight: "bold",
+                "&:hover": { backgroundColor: "#115293" },
+              }}
+            >
               Enviar
             </Button>
           </Box>

@@ -11,8 +11,6 @@ import {
 import { GraficaUnoPlana } from "../../Elements/Graficas/Grafica_plana_uno";
 import { GraficaDosCircular } from "../../Elements/Graficas/Gradica_circular_dos";
 
-
-
 export const CreditosPagos = () => {
   const [creditosDisponibles, setCreditosDisponibles] = useState(10);
   const [creditosMesPasado, setCreditosMesPasado] = useState(3);
@@ -110,7 +108,11 @@ export const CreditosPagos = () => {
               boxShadow: 3,
             }}
           >
-            <Button variant="contained" color="primary" onClick={handleToggleInfo}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleToggleInfo}
+            >
               Cómo recargar créditos
             </Button>
 
@@ -135,19 +137,18 @@ export const CreditosPagos = () => {
         </Grid>
 
         {/* Gráfica de ejemplo */}
-        <Grid size={{ xs: 12 }}>
-          <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 3 }}>
-            <GraficaUnoPlana titulo="Uso de Créditos por Trimestre" />
-          </Paper>
-        </Grid>
 
-              <Grid size={{ xs: 12 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 3 }}>
             <GraficaDosCircular titulo={"Reportes dos "} />
           </Paper>
         </Grid>
 
-
+      <Grid size={{ xs: 12, md: 6 }}>
+        <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 3 }}>
+          <GraficaUnoPlana titulo="Uso de Créditos por Trimestre" />
+        </Paper>
+      </Grid>
       </Grid>
 
       {/* Funciones dummy invisibles */}

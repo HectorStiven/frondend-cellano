@@ -73,7 +73,7 @@ export const MenuUsuarioVisual: React.FC = () => {
       </Grid>
 
       {/* Botón salir siempre al final */}
-      <Grid  sx={{ mt: 5 }}>
+      <Grid  sx={{ mt: 0 }}>
         <Button
           variant="contained"
           color="error"

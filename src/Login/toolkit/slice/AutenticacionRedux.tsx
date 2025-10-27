@@ -5,6 +5,7 @@ interface AuthState {
   nombreUsuario: string | null;
   tipoUsuario: string | null;
   access: boolean;
+  estudiante_id?: number | null;
 }
 
 const initialState: AuthState = {
@@ -12,6 +13,7 @@ const initialState: AuthState = {
   nombreUsuario: null,
   access: false,
   tipoUsuario: null,
+  estudiante_id: null,
 };
 
 const authSlice = createSlice({
@@ -21,12 +23,13 @@ const authSlice = createSlice({
     // 🔑 Guardar token y nombre
     setAuthData: (
       state: AuthState,
-      action: PayloadAction<{ token: string; nombreUsuario: string, tipoUsuario: string ,access: boolean}>
+      action: PayloadAction<{ token: string; nombreUsuario: string, tipoUsuario: string ,access: boolean, estudiante_id?: number }>
     ) => {
       state.token = action.payload.token;
       state.nombreUsuario = action.payload.nombreUsuario;
       state.access = true;
       state.tipoUsuario = action.payload.tipoUsuario;
+      state.estudiante_id = action.payload.estudiante_id;
     },
 
     // 🚪 Cerrar sesión

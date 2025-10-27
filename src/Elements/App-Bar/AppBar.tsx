@@ -23,7 +23,7 @@ import { ImagenPortada } from "./ImagenPortada";
 import { CustomizedSwitches } from "./ModoOscuro";
 import { MenuUsuarioVisual } from "./MenuUsuario/MenuUsuario";
 
-const pages = ["ChatBot", "MenuUsuario", "Sugerencias", "CreditosPagos", "Consumos", "Prueba"];
+const pages = [ "Menu", "Sugerencias", "CreditosPagos", "Consumos", "Prueba", "Estudiantes","ChatBot"];
 export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -50,10 +50,10 @@ export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
 
   return (
     <>
-      <AppBar position="static" style={{ backgroundColor: "#008e26" }}>
+      <AppBar position="static" style={{ backgroundColor: "#0E2050" }}>
         <Container maxWidth="xl">
           <Toolbar disableGutters>
-            <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
+            {/* <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} /> */}
             <Typography
               variant="h6"
               noWrap
@@ -69,7 +69,7 @@ export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
                 textDecoration: "none",
               }}
             >
-              Compensar B
+              Neil Armstrong
             </Typography>
 
             <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -82,16 +82,17 @@ export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
                     <List
                       style={{
                         width: 250,
+                        padding: 16,
                         borderRadius: 8,
                         backgroundColor: "white" /* Color naranja */,
-                        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                        boxShadow: "0px 2px 4px #000000ff",
                         transition:
                           "background-color 0.3s ease, border 0.3s ease" /* Transición suave */,
                       }}
                       sx={{
                         "&:hover": {
-                          backgroundColor: "rgba(0,142,38,1)",
-                          border: "2px solid #008e26" /* Borde delineado */,
+                          backgroundColor: "rgba(255, 255, 255, 1)",
+                          border: "2px solid rgba(19, 3, 255, 1)" /* Borde delineado */,
                         },
                       }}
                     >
@@ -136,7 +137,7 @@ export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
                 <Button
                   key={page}
                   onClick={() => navigate(`/${page}`)}
-                  sx={{ my: 2, color: "black", display: "block" }}
+                  sx={{ my: 2, color: "#8f8f8fff", display: "block" }}
                 >
                   {page}
                 </Button>
@@ -153,7 +154,7 @@ export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
                   <IconButton onClick={handleOpenDrawer} sx={{ p: 0 }}>
                     <Avatar
                       alt="Remy Sharp"
-                      src="/static/images/avatar/2.jpg"
+                      src="/image/menu/profe.jpg"
                     />
                   </IconButton>
                 </>

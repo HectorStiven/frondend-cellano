@@ -5,20 +5,9 @@ import { Box, Typography, Paper, Avatar } from "@mui/material";
 import { motion } from "framer-motion";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import EmojiFoodBeverageIcon from "@mui/icons-material/EmojiFoodBeverage";
+import { frasesMotivacionales } from "./FrasesBienvenida/FrasesBienvenida";
 
 
-  const frasesMotivacionales = [
-    "💪 Alimenta tu cuerpo, fortalece tu mente.",
-    "🌟 Cada plato es una oportunidad para nutrirte mejor.",
-    "🥗 Comer bien es una forma de respetarte a ti mismo.",
-    "🔥 La energía que das viene de lo que consumes.",
-    "🌈 Come con gratitud, vive con alegría.",
-    "🍎 Cuida tu cuerpo, es el único lugar donde tienes que vivir.",
-    "✨ Lo que comes hoy, te impulsa mañana.",
-    "🌿 Nutrir el cuerpo es honrar la vida.",
-    "🌞 Una buena comida es el comienzo de un gran día.",
-    "🕊️ Alimentarse bien es una forma de amor propio.",
-  ];
 
   
 export const Bienvenida = () => {

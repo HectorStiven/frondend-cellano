@@ -2,7 +2,7 @@
 export  const ImagenPortada = () => {
   return (
     <div>
-      <img src='/image/naruto.jpg'  alt="Instagram" style={{ width:250}}/>
+      <img src='/image/naruto.png'  alt="Instagram" style={{ width:250}}/>
     </div>
   )
 }

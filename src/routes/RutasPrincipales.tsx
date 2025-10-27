@@ -11,6 +11,7 @@ import { CreditosPagos } from "../Inicio/CreditosPagos/CreditosPagos";
 import { Consumos } from "../Inicio/Consumos/Consumos";
 import { Prueba } from "../Inicio/Prueba/Prueba";
 import { Bienvenida } from "../Inicio/Bienbenida/Bienbenida";
+import { ListarEstudiantes } from "../Inicio/Estudiantes/ListarEstidantes/ListarEstudiantes";
 
 export const RutasPrincipales = () => {
   const { modo_dark_numero } = useContext(AlertasContext);
@@ -31,7 +32,7 @@ export const RutasPrincipales = () => {
 
         <Route path="/ChatBot" element={<Chatbot />} />
 
-        <Route path="/MenuUsuario" element={<IndexMenu/>} />
+        <Route path="/Menu" element={<IndexMenu/>} />
 
         <Route path="/Sugerencias" element={<Sugerencias />} />
 
@@ -40,6 +41,8 @@ export const RutasPrincipales = () => {
         <Route path="/Consumos" element={<Consumos />} />
 
         <Route path="/Prueba" element={<Prueba />} />
+
+        <Route path="/Estudiantes" element={<ListarEstudiantes />} />
 
         <Route path="*" element={<Page404 />} />
       </Routes>

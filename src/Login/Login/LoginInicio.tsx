@@ -78,6 +78,7 @@ export const Login = () => {
           nombreUsuario: data.username,
           tipoUsuario: data.rol,
           access: true,
+          estudiante_id: data.estudiante,
         })
       );
 

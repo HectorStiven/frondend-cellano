@@ -9,8 +9,15 @@ import {
   HelpOutline,
   SupportAgent,
 } from "@mui/icons-material";
+import { useContext } from "react";
+import { RecuperarContext } from "../../Elements/Context/RecuperarContraseña";
 
 export const RecoverPasswordPageInfo = () => {
+  const { setRecuperar } = useContext(RecuperarContext);
+
+  const VolverLogin = () => {
+    setRecuperar(false);
+  };
   return (
     <Box
       sx={{
@@ -23,10 +30,10 @@ export const RecoverPasswordPageInfo = () => {
       }}
     >
       {/* Botón Volver centrado arriba */}
-      {/* Botón Volver centrado arriba */}
       <Box sx={{ display: "flex", justifyContent: "center", pt: 2, pb: 2 }}>
         <Paper
           elevation={6}
+          onClick={VolverLogin}
           sx={{
             display: "inline-flex",
             gap: 1.5,

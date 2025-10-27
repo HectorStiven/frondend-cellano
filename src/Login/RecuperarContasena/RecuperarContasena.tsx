@@ -34,6 +34,8 @@ export const RecuperarContasena: React.FC = () => {
     }, 1500);
   };
 
+
+
   return (
     <Box
       sx={{

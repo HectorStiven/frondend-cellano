@@ -1,47 +1,38 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-// En tu entrypoint, por ejemplo en _app.tsx o index.tsx
-import "primereact/resources/themes/saga-blue/theme.css"; // tema opcional
+
+// 🎨 Estilos de PrimeReact
+import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
+
 import { AlertasProvider } from "./Elements/Context/ContextModoDark";
 import { Provider } from "react-redux";
-import { store } from "./store";
+import { store, persistor } from "./store"; // 👈 importa también el persistor
+import { PersistGate } from "redux-persist/integration/react"; // 👈 importa PersistGate
+import { RecuperarProvider } from "./Elements/Context/RecuperarContraseña";
+import { ToastContainer } from "react-toastify";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
+
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <AlertasProvider>
-        <App />
-      </AlertasProvider>
+      {/* 🔐 PersistGate se asegura de restaurar el estado antes de renderizar */}
+      <PersistGate
+        loading={<div>Cargando aplicación...</div>}
+        persistor={persistor}
+      >
+        <AlertasProvider>
+          <RecuperarProvider>
+            <App />
+            <ToastContainer /> {/* 👈 Este componente es OBLIGATORIO */}
+          </RecuperarProvider>
+        </AlertasProvider>
+      </PersistGate>
     </Provider>
   </React.StrictMode>
 );
-
-// import React from "react";
-// import ReactDOM from "react-dom/client";
-// import "./index.css";
-// import { App } from "./App";
-// import "primereact/resources/themes/saga-blue/theme.css";
-// import "primereact/resources/primereact.min.css";
-// import "primeicons/primeicons.css";
-// import { AlertasProvider } from "./Elements/Context/ContextModoDark";
-// import { Provider } from "react-redux";
-// import { store } from "./store";
-
-// const root = ReactDOM.createRoot(
-//   document.getElementById("root") as HTMLElement
-// );
-// root.render(
-//   <React.StrictMode>
-//     <Provider store={store}>
-//       <AlertasProvider>
-//         <App />
-//       </AlertasProvider>
-//     </Provider>
-//   </React.StrictMode>
-// );

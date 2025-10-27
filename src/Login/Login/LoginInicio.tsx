@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Box,
   Button,
@@ -23,13 +23,77 @@ import {
   ErrorOutline,
 } from "@mui/icons-material";
 
+import { RecuperarContext } from "../../Elements/Context/RecuperarContraseña";
+import { api } from "../../api/Axios";
+import { useDispatch } from "react-redux";
+import { setAuthData } from "../toolkit/slice/AutenticacionRedux";
+import { control_error } from "../../Elements/alertas/alertaError";
+import { control_success } from "../../Elements/alertas/alertaSucces";
+
+// ==============================
+// 🔹 Tipado de respuesta del login
+// ==============================
+interface LoginResponse {
+  detail: string;
+  data: {
+    id: number;
+    last_login: string | null;
+    username: string;
+    rol: string;
+    creado_en: string;
+    estudiante: number;
+  };
+  token: string;
+}
+
+// ==============================
+// 🔹 Componente principal Login
+// ==============================
 export const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("djstiven3");
+  const [password, setPassword] = useState("159637");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const { setRecuperar } = useContext(RecuperarContext);
+  const dispatch = useDispatch();
 
+  // ==========================
+  // 🟢 Función para enviar login
+  // ==========================
+  const autenticarUsuario = async () => {
+    try {
+      const body = { username, password };
+      const res = await api.post<LoginResponse>(
+        "/almuerzo_check/usuarios/autenticacion/",
+        body
+      );
+
+      const { data, token } = res.data;
+
+      // Guardar en Redux
+      dispatch(
+        setAuthData({
+          token,
+          nombreUsuario: data.username,
+          tipoUsuario: data.rol,
+          access: true,
+        })
+      );
+
+      control_success("✅ Login exitoso");
+    } catch (error: any) {
+      const isAxiosError = error.isAxiosError || error.response;
+      const mensaje =
+        (isAxiosError && error.response?.data?.detail) ||
+        "❌ Error de autenticación";
+      control_error(mensaje);
+    }
+  };
+
+  // ==========================
+  // 🟡 Manejo del submit
+  // ==========================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -37,7 +101,7 @@ export const Login = () => {
 
     setTimeout(() => {
       if (username && password) {
-        console.log("Login attempt:", { username, password });
+        autenticarUsuario();
       } else {
         setError("Por favor completa todos los campos");
       }
@@ -45,6 +109,16 @@ export const Login = () => {
     }, 1000);
   };
 
+  // ==========================
+  // 🔵 Redirigir a recuperar contraseña
+  // ==========================
+  const VolverLogin = () => {
+    setRecuperar(true);
+  };
+
+  // ==========================
+  // 🧩 Render del formulario
+  // ==========================
   return (
     <Box
       sx={{
@@ -71,6 +145,7 @@ export const Login = () => {
           },
         }}
       >
+        {/* 🟣 Encabezado */}
         <Box sx={{ mb: 3 }}>
           <Typography
             variant="h4"
@@ -90,6 +165,10 @@ export const Login = () => {
           </Typography>
         </Box>
 
+        {/* Botón de test temporal */}
+        <Button onClick={autenticarUsuario}>Test Auth API</Button>
+
+        {/* 🟠 Formulario */}
         <form onSubmit={handleSubmit}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {error && (
@@ -105,6 +184,7 @@ export const Login = () => {
               </Alert>
             )}
 
+            {/* Campo usuario */}
             <TextField
               fullWidth
               label="Usuario"
@@ -133,13 +213,9 @@ export const Login = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  pl: 1,
-                },
-              }}
             />
 
+            {/* Campo contraseña */}
             <TextField
               fullWidth
               label="Contraseña"
@@ -185,14 +261,16 @@ export const Login = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  pl: 1,
-                },
-              }}
             />
 
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            {/* Recordarme y Recuperar */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <FormControlLabel
                 control={
                   <Checkbox
@@ -212,6 +290,7 @@ export const Login = () => {
               <Typography
                 variant="body2"
                 fontWeight={600}
+                onClick={VolverLogin}
                 sx={{
                   color: "secondary.main",
                   "&:hover": {
@@ -224,6 +303,7 @@ export const Login = () => {
               </Typography>
             </Box>
 
+            {/* Botón enviar */}
             <Button
               type="submit"
               variant="contained"
@@ -237,7 +317,8 @@ export const Login = () => {
                 background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                 boxShadow: "0px 6px 20px rgba(99,102,241,0.4)",
                 "&:hover": {
-                  background: "linear-gradient(135deg, #5a67d8 0%, #6b3fa0 100%)",
+                  background:
+                    "linear-gradient(135deg, #5a67d8 0%, #6b3fa0 100%)",
                   boxShadow: "0px 8px 28px rgba(99,102,241,0.5)",
                   transform: "translateY(-2px)",
                 },
@@ -250,6 +331,7 @@ export const Login = () => {
               {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
             </Button>
 
+            {/* Divider de ayuda */}
             <Divider sx={{ my: 1 }}>
               <Paper
                 elevation={3}
@@ -260,12 +342,17 @@ export const Login = () => {
                   borderRadius: 2,
                 }}
               >
-                <Typography variant="caption" fontWeight={600} color="text.secondary">
+                <Typography
+                  variant="caption"
+                  fontWeight={600}
+                  color="text.secondary"
+                >
                   ¿NECESITAS AYUDA?
                 </Typography>
               </Paper>
             </Divider>
 
+            {/* Información de contacto */}
             <Box sx={{ textAlign: "center" }}>
               <Typography variant="body2" color="text.secondary">
                 Contacta al <strong>administrador del sistema</strong>

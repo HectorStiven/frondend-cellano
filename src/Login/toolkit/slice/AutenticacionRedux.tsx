@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface AuthState {
   token: string | null;
   nombreUsuario: string | null;
+  tipoUsuario: string | null;
   access: boolean;
 }
 
@@ -10,6 +11,7 @@ const initialState: AuthState = {
   token: null,
   nombreUsuario: null,
   access: false,
+  tipoUsuario: null,
 };
 
 const authSlice = createSlice({
@@ -19,11 +21,12 @@ const authSlice = createSlice({
     // 🔑 Guardar token y nombre
     setAuthData: (
       state: AuthState,
-      action: PayloadAction<{ token: string; nombreUsuario: string }>
+      action: PayloadAction<{ token: string; nombreUsuario: string, tipoUsuario: string ,access: boolean}>
     ) => {
       state.token = action.payload.token;
       state.nombreUsuario = action.payload.nombreUsuario;
       state.access = true;
+      state.tipoUsuario = action.payload.tipoUsuario;
     },
 
     // 🚪 Cerrar sesión
@@ -31,6 +34,7 @@ const authSlice = createSlice({
       state.token = null;
       state.nombreUsuario = null;
       state.access = false;
+      state.tipoUsuario = null;
     },
 
     // 🔄 Cambiar acceso manualmente (opcional)

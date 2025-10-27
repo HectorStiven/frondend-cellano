@@ -9,7 +9,7 @@ export const Prueba = () => {
   const auth = useSelector((state: RootState) => state.auth);
 
   const handleLogin = () => {
-    dispatch(setAuthData({ token: "ABC123TOKEN", nombreUsuario: "Stiven" }));
+    dispatch(setAuthData({ token: "ABC123TOKEN", nombreUsuario: "Stiven" , tipoUsuario: "admin", access: true }));
   };
 
   const handleLogout = () => {
@@ -46,7 +46,9 @@ export const Prueba = () => {
         <Typography variant="body1" sx={{ mb: 2 }}>
           <strong>Acceso:</strong> {auth.access ? "✅ Permitido" : "❌ Denegado"}
         </Typography>
-
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          <strong>Tipo de Usuario:</strong> {auth.tipoUsuario ?? "Ninguno"}
+        </Typography>
         <Button
           variant="contained"
           color="primary"

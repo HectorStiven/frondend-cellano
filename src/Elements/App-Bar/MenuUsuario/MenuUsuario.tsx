@@ -1,8 +1,17 @@
 import React from 'react';
 import { Avatar, Grid, Typography, Box, Button } from '@mui/material';
 import { ExitToApp } from '@mui/icons-material';
-
+import { useDispatch } from 'react-redux';
+import { clearAuthData } from '../../../Login/toolkit/slice/AutenticacionRedux';
 export const MenuUsuarioVisual: React.FC = () => {
+
+  const dispatch = useDispatch();
+
+    const handleAccessToggle = () => {
+    dispatch(clearAuthData());
+  };
+
+
   const userData = {
     name: "Nombre de Usuario",
     email: "usuario@example.com",
@@ -37,7 +46,7 @@ export const MenuUsuarioVisual: React.FC = () => {
     >
       {/* Avatar e info del usuario */}
       <Grid >
-        <Avatar alt="Usuario" src="/static/images/avatar.jpg" sx={{ width: 140, height: 140 }} />
+        <Avatar alt="Usuario" src="/image/menu/profe.jpg" sx={{ width: 140, height: 140 }} />
       </Grid>
       <Grid >
         <Typography variant="h5">{userData.name}</Typography>
@@ -77,6 +86,7 @@ export const MenuUsuarioVisual: React.FC = () => {
         <Button
           variant="contained"
           color="error"
+          onClick={handleAccessToggle}
           startIcon={<ExitToApp />}
           sx={{ width: 180 }}
         >

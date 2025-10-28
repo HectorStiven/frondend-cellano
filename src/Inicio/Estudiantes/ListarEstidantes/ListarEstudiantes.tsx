@@ -25,6 +25,7 @@ import { download_pdf } from "../../../Elements/DescargarDocumentos/PDF_descarga
 import { download_xls } from "../../../Elements/DescargarDocumentos/XLS_descargar";
 import { ModalCrearEstudiantes } from "../CrearEstudiantes/CrearEstudiantes";
 import { ModalEditarEstudiantes } from "../EditarEstudiantes/EditarEstudiantes";
+import { ListarAcudiente } from "../Acudientes/ListarAcudiente/ListarAcudiente";
 
 interface Estudiante {
   id: number;
@@ -294,6 +295,11 @@ export const ListarEstudiantes: React.FC = () => {
 <Grid size={{ xs: 6 }} sx={{ display: 'flex', justifyContent: 'center' }}>
         <ModalEditarEstudiantes />
         </Grid >
+      </Grid>
+
+
+      <Grid size={{xs:12}}>
+      <ListarAcudiente />
       </Grid>
     </Box>
   );

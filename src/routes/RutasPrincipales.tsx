@@ -13,6 +13,7 @@ import { Prueba } from "../Inicio/Prueba/Prueba";
 import { Bienvenida } from "../Inicio/Bienbenida/Bienbenida";
 import { ListarEstudiantes } from "../Inicio/Estudiantes/ListarEstidantes/ListarEstudiantes";
 import { ListarMenu } from "../Inicio/Menu/ListarMenu/ListarMenu";
+import { ListarAcudiente } from "../Inicio/Estudiantes/Acudientes/ListarAcudiente/ListarAcudiente";
 
 export const RutasPrincipales = () => {
   const { modo_dark_numero } = useContext(AlertasContext);
@@ -29,11 +30,14 @@ export const RutasPrincipales = () => {
       <Routes>
         <Route path="/" element={<Bienvenida />} />
 
-        <Route path="/Recuperar_contrasena"element={<IndexRecuperarContrasena />}  />
+        <Route
+          path="/Recuperar_contrasena"
+          element={<IndexRecuperarContrasena />}
+        />
 
         <Route path="/ChatBot" element={<Chatbot />} />
 
-        <Route path="/Menu" element={<IndexMenu/>} />
+        <Route path="/Menu" element={<IndexMenu />} />
 
         <Route path="/Sugerencias" element={<Sugerencias />} />
 
@@ -45,10 +49,9 @@ export const RutasPrincipales = () => {
 
         <Route path="/Estudiantes" element={<ListarEstudiantes />} />
 
+        <Route path="/MenuAdmin" element={<ListarMenu />} />
 
-        <Route path ="/MenuAdmin" element={<ListarMenu />} />
-
-      
+        <Route path="/Acudientes" element={<ListarAcudiente />} />
 
         <Route path="*" element={<Page404 />} />
       </Routes>

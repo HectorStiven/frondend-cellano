@@ -26,6 +26,7 @@ import { download_xls } from "../../../Elements/DescargarDocumentos/XLS_descarga
 import { ModalCrearEstudiantes } from "../CrearEstudiantes/CrearEstudiantes";
 import { ModalEditarEstudiantes } from "../EditarEstudiantes/EditarEstudiantes";
 import { ListarAcudiente } from "../Acudientes/ListarAcudiente/ListarAcudiente";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 interface Estudiante {
   id: number;
@@ -130,14 +131,18 @@ export const ListarEstudiantes: React.FC = () => {
             style={{ backgroundColor: "red" }}
             onClick={() => deleteEstudiante(params.row.id)}
           >
-            <DeleteIcon />
+                        <DeleteIcon />
+
           </Button>
           <Button
             variant="contained"
-            style={{ backgroundColor: "green" }}
-            onClick={() => console.log("Activar", params.row.id)}
+            style={{ backgroundColor: "rgba(255, 162, 0, 1)" }}
+            startIcon={<VisibilityIcon />}
+            onClick={() =>
+              console.log("Ver acudientes del estudiante:", params.row.id)
+            }
           >
-            Activar
+            Acudientes
           </Button>
         </div>
       ),
@@ -287,19 +292,24 @@ export const ListarEstudiantes: React.FC = () => {
             autoHeight
             getRowId={(row) => row.id}
           />
+        </Grid>
+        <Grid
+          size={{ xs: 6 }}
+          sx={{ display: "flex", justifyContent: "center" }}
+        >
+          <ModalCrearEstudiantes />
+        </Grid>
+
+        <Grid
+          size={{ xs: 6 }}
+          sx={{ display: "flex", justifyContent: "center" }}
+        >
+          <ModalEditarEstudiantes />
+        </Grid>
       </Grid>
-<Grid size={{ xs: 6 }} sx={{ display: 'flex', justifyContent: 'center' }}>
-        <ModalCrearEstudiantes />
-        </Grid >
 
-<Grid size={{ xs: 6 }} sx={{ display: 'flex', justifyContent: 'center' }}>
-        <ModalEditarEstudiantes />
-        </Grid >
-      </Grid>
-
-
-      <Grid size={{xs:12}}>
-      <ListarAcudiente />
+      <Grid size={{ xs: 12 }}>
+        <ListarAcudiente />
       </Grid>
     </Box>
   );

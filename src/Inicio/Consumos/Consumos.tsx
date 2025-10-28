@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Grid, Chip, Button, Box } from "@mui/material";
+import { Grid, Chip, Button } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Title } from "../../Elements/Titulo/Titulo";
 import { Geolocalizacion } from "../../Elements/Mapa/Mapa";
@@ -64,13 +64,22 @@ export const Consumos = () => {
   ];
 
   return (
-    <Box sx={{ padding: 4, minHeight: '100vh' }}>
+    <Grid
+      spacing={3}
+      sx={{
+        p: 4,
+        backgroundColor: "#fafafa",
+        borderRadius: 4,
+        boxShadow: 4,
+        m: 3,
+      }}
+    >
+      {/* Título principal */}
+      <Grid size={{ xs: 12 }}>
+        <Title title="Consumos" />
+      </Grid>
 
-        <Grid  sx={{ mb: 3 }}>
-          <Title title="Consumos" />
-        </Grid>
-
-      <Grid sx={{ xs: 12 }}>
+      <Grid sx={{ xs: 12,marginTop: 3 }}>
         <DataGrid
           rows={consumos}
           columns={columns}
@@ -83,10 +92,10 @@ export const Consumos = () => {
         />
       </Grid>
 
-   <Grid sx={{ mt: 3 }}>
+      <Grid sx={{ mt: 3 }}>
         {/* Ubicación de San Benito, Villavicencio */}
         <Geolocalizacion coordenada_x={4.1348} coordenada_y={-73.6202} />
       </Grid>
-    </Box>
+    </Grid>
   );
 };

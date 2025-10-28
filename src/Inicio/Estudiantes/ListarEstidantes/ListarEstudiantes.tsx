@@ -18,7 +18,7 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import Swal from "sweetalert2";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { api } from "../../../api/Axios";
 import { Title } from "../../../Elements/Titulo/Titulo";
 import { download_pdf } from "../../../Elements/DescargarDocumentos/PDF_descargar";
@@ -26,7 +26,6 @@ import { download_xls } from "../../../Elements/DescargarDocumentos/XLS_descarga
 import { ModalCrearEstudiantes } from "../CrearEstudiantes/CrearEstudiantes";
 import { ModalEditarEstudiantes } from "../EditarEstudiantes/EditarEstudiantes";
 import { ListarAcudiente } from "../Acudientes/ListarAcudiente/ListarAcudiente";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 
 interface Estudiante {
   id: number;
@@ -62,36 +61,13 @@ export const ListarEstudiantes: React.FC = () => {
         "/almuerzo_check/usuarios/listar_estudiantes/"
       );
       setEstudiantes(res.data.data);
-    } catch (error) {
-      console.error(error);
+    } catch (error:any) {
+      console.error(error.response.data.detail);
     }
   };
 
   const deleteEstudiante = async (id: number) => {
-    try {
-      const result = await Swal.fire({
-        title: "¿Está seguro?",
-        text: "Esta acción eliminará al estudiante de forma permanente.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#006b0a",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar",
-      });
-
-      if (result.isConfirmed) {
-        await api.delete(`/universidad/borrar_estudiante/${id}/`);
-        setEstudiantes((prev) => prev.filter((e) => e.id !== id));
-        Swal.fire(
-          "¡Eliminado!",
-          "El estudiante ha sido eliminado correctamente.",
-          "success"
-        );
-      }
-    } catch (error) {
-      Swal.fire("Error", "No se pudo eliminar el estudiante.", "error");
-    }
+    console.log("Eliminar estudiante con id:", id);
   };
 
   useEffect(() => {
@@ -99,6 +75,7 @@ export const ListarEstudiantes: React.FC = () => {
   }, []);
 
   const handleSearch = () => fetchEstudiantes();
+
   const columns: GridColDef[] = [
     { field: "identificacion", headerName: "Identificación", flex: 1 },
     { field: "primer_nombre", headerName: "Primer Nombre", flex: 1 },
@@ -122,21 +99,20 @@ export const ListarEstudiantes: React.FC = () => {
       headerName: "Acciones",
       flex: 1.2,
       renderCell: (params: any) => (
-        <div style={{ display: "flex", gap: 5 }}>
-          <Button variant="contained" style={{ backgroundColor: "blue" }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button variant="contained" sx={{ backgroundColor: "blue" }}>
             <EditIcon />
           </Button>
           <Button
             variant="contained"
-            style={{ backgroundColor: "red" }}
+            sx={{ backgroundColor: "red" }}
             onClick={() => deleteEstudiante(params.row.id)}
           >
-                        <DeleteIcon />
-
+            <DeleteIcon />
           </Button>
           <Button
             variant="contained"
-            style={{ backgroundColor: "rgba(255, 162, 0, 1)" }}
+            sx={{ backgroundColor: "rgba(255, 162, 0, 1)" }}
             startIcon={<VisibilityIcon />}
             onClick={() =>
               console.log("Ver acudientes del estudiante:", params.row.id)
@@ -144,24 +120,24 @@ export const ListarEstudiantes: React.FC = () => {
           >
             Acudientes
           </Button>
-        </div>
+        </Box>
       ),
     },
   ];
 
   const textFieldStyle = {
-    borderRadius: "20px",
-    fontSize: "1.2rem",
-    margin: 1,
-    width: "95%",
-    marginTop: 2,
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "20px",
+      backgroundColor: "#fff",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    },
   };
+
   const labelStyle = {
-    fontSize: "1.2rem",
-    width: "100%",
-    marginTop: 2,
+    fontSize: "1.1rem",
     letterSpacing: 0.5,
   };
+
   const grados = [
     "Primero",
     "Segundo",
@@ -177,24 +153,27 @@ export const ListarEstudiantes: React.FC = () => {
   ];
 
   return (
-    <Box sx={{ padding: 4, minHeight: "100vh" }}>
-      {/* Título fuera del Grid */}
-      <Box sx={{ mb: 3 }}>
-        <Title title="Lista de Estudiantes" />
-      </Box>
-
+    <>
       <Grid
-        container
         sx={{
-          p: 2,
-          background: "#FAFAFA",
-          borderRadius: "15px",
-          boxShadow: "0px 3px 6px #042F4A26",
+          p: 4,
+          backgroundColor: "#fafafa",
+          borderRadius: 4,
+          boxShadow: 4,
+          m: 3,
         }}
-        spacing={2}
+        container
+        spacing={3}
+        justifyContent="center"
+        alignItems="center"
       >
-        {/* Filtros */}
-        <Grid size={{ xs: 12, md: 3 }}>
+        {/* Título */}
+        <Grid size={{ xs: 12 }}>
+          <Title title="Lista de Estudiantes" />
+        </Grid>
+
+        {/* Campo: Identificación */}
+        <Grid size={{ xs: 12, md: 4 }}>
           <TextField
             fullWidth
             label="Identificación"
@@ -209,12 +188,13 @@ export const ListarEstudiantes: React.FC = () => {
                   <BadgeIcon />
                 </InputAdornment>
               ),
-              sx: textFieldStyle,
             }}
+            sx={textFieldStyle}
             InputLabelProps={{ sx: labelStyle }}
           />
         </Grid>
 
+        {/* Campo: Primer Nombre */}
         <Grid size={{ xs: 12, md: 4 }}>
           <TextField
             fullWidth
@@ -228,20 +208,21 @@ export const ListarEstudiantes: React.FC = () => {
                   <AccountCircle />
                 </InputAdornment>
               ),
-              sx: textFieldStyle,
             }}
+            sx={textFieldStyle}
             InputLabelProps={{ sx: labelStyle }}
           />
         </Grid>
 
-        <Grid size={{ xs: 12, md: 3 }}>
-          <FormControl fullWidth sx={{ margin: 0 }}>
+        {/* Campo: Grado */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <FormControl fullWidth>
             <InputLabel sx={labelStyle}>Grado</InputLabel>
             <Select
               label="Grado"
               value={formData.grado}
               onChange={(e) => handleInputChange("grado", e.target.value)}
-              sx={{ ...textFieldStyle }}
+              sx={textFieldStyle}
             >
               {grados.map((g, index) => (
                 <MenuItem key={index} value={g}>
@@ -252,25 +233,28 @@ export const ListarEstudiantes: React.FC = () => {
           </FormControl>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 2 }}>
+        {/* Botón Buscar */}
+        <Grid size={{ xs: 12, md: 4 }}>
           <Button
             variant="contained"
             startIcon={<SearchIcon />}
-            sx={{
-              width: "90%",
-              height: 60,
-              borderRadius: 20,
-              backgroundColor: "green",
-              fontSize: "1.1rem",
-              margin: 1,
-            }}
             onClick={handleSearch}
+            sx={{
+              width: "100%",
+              height: 56,
+              borderRadius: 3,
+              backgroundColor: "green",
+              fontSize: "1rem",
+              textTransform: "none",
+              fontWeight: "bold",
+            }}
           >
             Buscar
           </Button>
         </Grid>
 
-        {/* Botones de exportar */}
+        {/* Exportar */}
+
         <Grid size={{ xs: 12 }}>
           <ButtonGroup
             style={{ margin: 1, display: "flex", justifyContent: "flex-end" }}
@@ -291,26 +275,32 @@ export const ListarEstudiantes: React.FC = () => {
             columns={columns}
             autoHeight
             getRowId={(row) => row.id}
+            sx={{
+              backgroundColor: "#fff",
+              borderRadius: 2,
+              boxShadow: 2,
+              p: 1,
+            }}
           />
         </Grid>
+
+        {/* Modales */}
         <Grid
           size={{ xs: 6 }}
           sx={{ display: "flex", justifyContent: "center" }}
         >
           <ModalCrearEstudiantes />
         </Grid>
-
         <Grid
           size={{ xs: 6 }}
           sx={{ display: "flex", justifyContent: "center" }}
         >
           <ModalEditarEstudiantes />
         </Grid>
-      </Grid>
 
-      <Grid size={{ xs: 12 }}>
-        <ListarAcudiente />
+        {/* Acudientes */}
       </Grid>
-    </Box>
+      <ListarAcudiente />
+    </>
   );
 };

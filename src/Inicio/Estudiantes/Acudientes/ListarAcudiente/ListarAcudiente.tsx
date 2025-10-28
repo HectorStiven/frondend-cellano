@@ -5,7 +5,6 @@ import {
   InputAdornment,
   Button,
   Chip,
-  Box,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import AccountCircle from "@mui/icons-material/AccountCircle";
@@ -107,10 +106,23 @@ export const ListarAcudiente: React.FC = () => {
   };
 
   return (
-    <Box sx={{ padding: 4, minHeight: "100vh" }}>
-      <Box sx={{ mb: 3 }}>
-        <Title title="Lista de Acudientes" />
-      </Box>
+     <Grid
+        sx={{
+          p: 4,
+          backgroundColor: "#fafafa",
+          borderRadius: 4,
+          boxShadow: 4,
+          m: 3,
+        }}
+        container
+        spacing={3}
+        justifyContent="center"
+        alignItems="center"
+      >
+        {/* Título */}
+        <Grid size={{ xs: 12 }}>
+          <Title title="Listar Acudientes" />
+        </Grid>
 
       <Grid
         container
@@ -170,6 +182,6 @@ export const ListarAcudiente: React.FC = () => {
           />
         </Grid>
       </Grid>
-    </Box>
+    </Grid>
   );
 };

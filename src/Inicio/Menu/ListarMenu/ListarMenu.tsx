@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Grid, Box, Button } from "@mui/material";
+import { Grid, Button, TextField } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import SearchIcon from "@mui/icons-material/Search";
 import { Title } from "../../../Elements/Titulo/Titulo";
 import { api } from "../../../api/Axios";
 import { ModalCrearMenu } from "../CrearMenu/CrearMenu";
@@ -25,7 +26,9 @@ export const ListarMenu: React.FC = () => {
 
   const fetchMenus = async () => {
     try {
-      const res = await api.get<{ data: Menu[] }>("/almuerzo_check/menu/listar/");
+      const res = await api.get<{ data: Menu[] }>(
+        "/almuerzo_check/menu/listar/"
+      );
       setMenus(res.data.data);
     } catch (error) {
       console.error(error);
@@ -45,7 +48,6 @@ export const ListarMenu: React.FC = () => {
   };
 
   const columns: GridColDef[] = [
-    // { field: "fecha", headerName: "Fecha", flex: 1 },
     { field: "descripcion", headerName: "Descripción", flex: 2 },
     { field: "plato_principal", headerName: "Plato Principal", flex: 1.5 },
     { field: "acompanamiento", headerName: "Acompañamiento", flex: 1.5 },
@@ -77,42 +79,131 @@ export const ListarMenu: React.FC = () => {
     },
   ];
 
+  // 🔍 Campos del filtro visual
+  const [platoPrincipal, setPlatoPrincipal] = useState("");
+  const [bebida, setBebida] = useState("");
+  const [postre, setPostre] = useState("");
+
+  const handleBuscar = () => {
+    console.log("Buscando con:", { platoPrincipal, bebida, postre });
+  };
+
   return (
-    <Box sx={{ padding: 4, minHeight: "100vh" }}>
-      <Box sx={{ mb: 3 }}>
-        <Title title="Lista de Menús" />
-      </Box>
-
+    <>
       <Grid
-        container
         sx={{
-          p: 2,
-          background: "#FAFAFA",
-          borderRadius: "15px",
-          boxShadow: "0px 3px 6px #042F4A26",
+          p: 4,
+          backgroundColor: "#fafafa",
+          borderRadius: 4,
+          boxShadow: 4,
+          m: 3,
         }}
-        spacing={2}
+        container
+        spacing={3}
       >
-        {/* Tabla de Menús */}
+        {/* 🔹 Título */}
         <Grid size={{ xs: 12 }}>
-          <DataGrid
-            rows={menus}
-            columns={columns}
-            autoHeight
-            getRowId={(row) => row.id}
-          />
+          <Title title="Lista de Menús" />
         </Grid>
 
-        {/* Botones de Crear y Editar */}
-        <Grid size={{ xs: 6 }} sx={{ display: "flex", justifyContent: "center" }}>
-          <ModalCrearMenu />
-        </Grid>
-        <Grid size={{ xs: 6 }} sx={{ display: "flex", justifyContent: "center" }}>
-          <ModalEditarMenu />
+        {/* 🔹 Filtros de búsqueda */}
+   
+          <Grid size={{ xs: 12, md: 4 }}>
+            <TextField
+              fullWidth
+              label="Plato Principal"
+              variant="outlined"
+              size="small"
+              value={platoPrincipal}
+              onChange={(e) => setPlatoPrincipal(e.target.value)}
+              sx={{
+                "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+              }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 3 }}>
+            <TextField
+              fullWidth
+              label="Bebida"
+              variant="outlined"
+              size="small"
+              value={bebida}
+              onChange={(e) => setBebida(e.target.value)}
+              sx={{
+                "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+              }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 3 }}>
+            <TextField
+              fullWidth
+              label="Postre"
+              variant="outlined"
+              size="small"
+              value={postre}
+              onChange={(e) => setPostre(e.target.value)}
+              sx={{
+                "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+              }}
+            />
+          </Grid>
+          <Grid
+            size={{ xs: 12, md: 2 }}
+          >
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<SearchIcon />}
+              onClick={handleBuscar}
+              sx={{
+                height: "40px",
+                borderRadius: "10px",
+                textTransform: "none",
+                fontWeight: "bold",
+              }}
+            >
+              Buscar
+            </Button>
+          </Grid>
+     
+        {/* 🔹 Tabla de Menús */}
+        <Grid
+          container
+          sx={{
+            p: 2,
+            background: "#FAFAFA",
+            borderRadius: "15px",
+            boxShadow: "0px 3px 6px #042F4A26",
+          }}
+          spacing={2}
+        >
+          <Grid size={{ xs: 12 }}>
+            <DataGrid
+              rows={menus}
+              columns={columns}
+              autoHeight
+              getRowId={(row) => row.id}
+            />
+          </Grid>
+
+          {/* 🔹 Botones de Crear y Editar */}
+          <Grid
+            size={{ xs: 6 }}
+            sx={{ display: "flex", justifyContent: "center" }}
+          >
+            <ModalCrearMenu />
+          </Grid>
+          <Grid
+            size={{ xs: 6 }}
+            sx={{ display: "flex", justifyContent: "center" }}
+          >
+            <ModalEditarMenu />
+          </Grid>
         </Grid>
       </Grid>
 
+      {/* 🔹 Reseñas */}
       <ListarReseñas />
-    </Box>
+    </>
   );
 };

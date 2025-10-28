@@ -12,6 +12,7 @@ import { Consumos } from "../Inicio/Consumos/Consumos";
 import { Prueba } from "../Inicio/Prueba/Prueba";
 import { Bienvenida } from "../Inicio/Bienbenida/Bienbenida";
 import { ListarEstudiantes } from "../Inicio/Estudiantes/ListarEstidantes/ListarEstudiantes";
+import { ListarMenu } from "../Inicio/Menu/ListarMenu/ListarMenu";
 
 export const RutasPrincipales = () => {
   const { modo_dark_numero } = useContext(AlertasContext);
@@ -43,6 +44,11 @@ export const RutasPrincipales = () => {
         <Route path="/Prueba" element={<Prueba />} />
 
         <Route path="/Estudiantes" element={<ListarEstudiantes />} />
+
+
+        <Route path ="/MenuAdmin" element={<ListarMenu />} />
+
+      
 
         <Route path="*" element={<Page404 />} />
       </Routes>

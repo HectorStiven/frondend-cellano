@@ -18,7 +18,7 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import GroupIcon from "@mui/icons-material/Group"; // 👈 ícono para "Alumnos"
 import { api } from "../../../api/Axios";
 import { Title } from "../../../Elements/Titulo/Titulo";
 import { download_pdf } from "../../../Elements/DescargarDocumentos/PDF_descargar";
@@ -26,6 +26,7 @@ import { download_xls } from "../../../Elements/DescargarDocumentos/XLS_descarga
 import { ModalCrearEstudiantes } from "../CrearEstudiantes/CrearEstudiantes";
 import { ModalEditarEstudiantes } from "../EditarEstudiantes/EditarEstudiantes";
 import { ListarAcudiente } from "../Acudientes/ListarAcudiente/ListarAcudiente";
+import { InformacionEstudiante } from "../InformacionEstudiante/InformacionEstudiante";
 
 interface Estudiante {
   id: number;
@@ -47,6 +48,7 @@ const initialData = {
 export const ListarEstudiantes: React.FC = () => {
   const [formData, setFormData] = useState(initialData);
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null); // 👈 id del estudiante seleccionado
 
   const handleInputChange = (
     field: keyof typeof initialData,
@@ -61,7 +63,7 @@ export const ListarEstudiantes: React.FC = () => {
         "/almuerzo_check/usuarios/listar_estudiantes/"
       );
       setEstudiantes(res.data.data);
-    } catch (error:any) {
+    } catch (error: any) {
       console.error(error.response.data.detail);
     }
   };
@@ -76,13 +78,17 @@ export const ListarEstudiantes: React.FC = () => {
 
   const handleSearch = () => fetchEstudiantes();
 
+  // 🔹 Nueva función: seleccionar estudiante para mostrar acudientes
+  const handleShowAcudientes = (id: number) => {
+    setSelectedStudentId(id);
+  };
+
   const columns: GridColDef[] = [
     { field: "identificacion", headerName: "Identificación", flex: 1 },
     { field: "primer_nombre", headerName: "Primer Nombre", flex: 1 },
     { field: "primer_apellido", headerName: "Primer Apellido", flex: 1 },
     { field: "grado", headerName: "Grado", flex: 0.7 },
-    { field: "grupo", headerName: "Grupo", flex: 0.5 },
-    { field: "jornada", headerName: "Jornada", flex: 0.7 },
+
     {
       field: "estado",
       headerName: "Estado",
@@ -97,12 +103,13 @@ export const ListarEstudiantes: React.FC = () => {
     {
       field: "acciones",
       headerName: "Acciones",
-      flex: 1.2,
+      flex: 1.8,
       renderCell: (params: any) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button variant="contained" sx={{ backgroundColor: "blue" }}>
             <EditIcon />
           </Button>
+
           <Button
             variant="contained"
             sx={{ backgroundColor: "red" }}
@@ -110,16 +117,19 @@ export const ListarEstudiantes: React.FC = () => {
           >
             <DeleteIcon />
           </Button>
+
+          {/* Botón para ver acudientes */}
           <Button
             variant="contained"
-            sx={{ backgroundColor: "rgba(255, 162, 0, 1)" }}
-            startIcon={<VisibilityIcon />}
-            onClick={() =>
-              console.log("Ver acudientes del estudiante:", params.row.id)
-            }
+            sx={{ backgroundColor: "orange" }}
+            onClick={() => handleShowAcudientes(params.row.id)}
           >
+            <GroupIcon sx={{ mr: 1 }} />
             Acudientes
           </Button>
+
+          {/* Mantienes tu botón existente */}
+          <InformacionEstudiante id={params.row.id} />
         </Box>
       ),
     },
@@ -254,7 +264,6 @@ export const ListarEstudiantes: React.FC = () => {
         </Grid>
 
         {/* Exportar */}
-
         <Grid size={{ xs: 12 }}>
           <ButtonGroup
             style={{ margin: 1, display: "flex", justifyContent: "flex-end" }}
@@ -297,10 +306,10 @@ export const ListarEstudiantes: React.FC = () => {
         >
           <ModalEditarEstudiantes />
         </Grid>
-
-        {/* Acudientes */}
       </Grid>
-      <ListarAcudiente />
+
+      {/* 👇 Aquí se muestra ListarAcudiente solo si se seleccionó un estudiante */}
+      {selectedStudentId && <ListarAcudiente id={selectedStudentId} />}
     </>
   );
 };

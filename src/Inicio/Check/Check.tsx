@@ -4,7 +4,6 @@ import {
   Button,
   Grid,
   TextField,
-  Card,
   Typography,
   Modal,
 } from "@mui/material";
@@ -12,113 +11,170 @@ import SearchIcon from "@mui/icons-material/Search";
 import EmailIcon from "@mui/icons-material/Email";
 import PersonIcon from "@mui/icons-material/Person";
 import BadgeIcon from "@mui/icons-material/Badge";
+import UploadIcon from "@mui/icons-material/Upload";
 import Webcam from "react-webcam";
 import { control_error } from "../../Elements/alertas/alertaError";
 import { control_success } from "../../Elements/alertas/alertaSucces";
 import { Title } from "../../Elements/Titulo/Titulo";
+import { api } from "../../api/Axios";
+import { Info } from "./Info/Info";
 
+// Interfaz del estudiante
 interface Estudiante {
   id: number;
   identificacion: string;
+  tipo_documento: string;
   primer_nombre: string;
+  segundo_nombre: string;
   primer_apellido: string;
+  segundo_apellido: string;
+  foto: string | null;
+  genero: string;
+  fecha_nacimiento: string;
+  direccion: string;
+  telefono: string;
   correo: string;
   grado: string;
   grupo: string;
   jornada: string;
+  año_ingreso: number;
   estado: boolean;
   creditos: string;
+  creado_en: string;
+  fotoId?: string;
+}
+
+const estudianteInicial: Estudiante = {
+  id: 0,
+  identificacion: "",
+  tipo_documento: "",
+  primer_nombre: "",
+  segundo_nombre: "",
+  primer_apellido: "",
+  segundo_apellido: "",
+  foto: null,
+  genero: "",
+  fecha_nacimiento: "",
+  direccion: "",
+  telefono: "",
+  correo: "",
+  grado: "",
+  grupo: "",
+  jornada: "",
+  año_ingreso: 0,
+  estado: false,
+  creditos: "",
+  creado_en: "",
+  fotoId: "",
+};
+
+interface ReconocimientoResponse {
+  success: boolean;
+  detail: string;
+  data: Estudiante;
 }
 
 export const CheckEstudiante: React.FC = () => {
-  const estudiantes: Estudiante[] = [
-    {
-      id: 1,
-      identificacion: "12345",
-      primer_nombre: "Juan",
-      primer_apellido: "Pérez",
-      correo: "juan.perez@example.com",
-      grado: "10",
-      grupo: "A",
-      jornada: "Mañana",
-      estado: true,
-      creditos: "15",
-    },
-    {
-      id: 2,
-      identificacion: "67890",
-      primer_nombre: "María",
-      primer_apellido: "López",
-      correo: "maria.lopez@example.com",
-      grado: "9",
-      grupo: "B",
-      jornada: "Tarde",
-      estado: false,
-      creditos: "10",
-    },
-    {
-      id: 3,
-      identificacion: "55555",
-      primer_nombre: "Carlos",
-      primer_apellido: "Gómez",
-      correo: "carlos.gomez@example.com",
-      grado: "11",
-      grupo: "C",
-      jornada: "Mañana",
-      estado: true,
-      creditos: "20",
-    },
-  ];
-
   const [form, setForm] = useState({
     correo: "",
     primer_nombre: "",
     identificacion: "",
+    segundo_nombre: "",
+    segundo_apellido: "",
+    grado: "",
+    grupo: "",
+    jornada: "",
+    año_ingreso: 0,
   });
 
-  const [resultado, setResultado] = useState<Estudiante | null>(null);
-
-  // Modal cámara
   const [openCam, setOpenCam] = useState(false);
   const webcamRef = useRef<Webcam>(null);
-  const [captura, setCaptura] = useState<string | null>(null);
+  const [captura, setCaptura] = useState<string | null>(
+    "https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif"
+  );
+  const [enviando, setEnviando] = useState(false);
+  const [estudiante, setEstudiante] = useState<Estudiante>(estudianteInicial);
 
   const handleInputChange = (campo: keyof typeof form, valor: string) => {
     setForm({ ...form, [campo]: valor });
   };
 
   const handleBuscar = () => {
-    const { correo, primer_nombre, identificacion } = form;
-
-    if (!correo && !primer_nombre && !identificacion) {
-      control_error("Debes ingresar al menos un campo para buscar");
-      return;
-    }
-
-    const encontrado = estudiantes.find(
-      (e) =>
-        (correo && e.correo.toLowerCase() === correo.toLowerCase()) ||
-        (primer_nombre &&
-          e.primer_nombre.toLowerCase() === primer_nombre.toLowerCase()) ||
-        (identificacion && e.identificacion === identificacion)
-    );
-
-    if (encontrado) {
-      setResultado(encontrado);
-      control_success("Estudiante encontrado correctamente");
-    } else {
-      setResultado(null);
-      control_error("No se encontró el estudiante");
-    }
+    control_error("Ejemplo: búsqueda local desactivada para prueba.");
   };
 
   const handleCapture = () => {
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot();
       setCaptura(imageSrc);
-      console.log("Imagen capturada:", imageSrc);
-      setOpenCam(false);
+      control_success("Foto capturada correctamente ✅");
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCaptura(reader.result as string);
+        control_success("Imagen cargada correctamente ✅");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEnviarFoto = async () => {
+    if (!captura) {
+      control_error("Primero toma o sube una foto.");
+      return;
+    }
+
+    try {
+      setEnviando(true);
+
+      const byteString = atob(captura.split(",")[1]);
+      const mimeString = captura.split(",")[0].split(":")[1].split(";")[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++)
+        ia[i] = byteString.charCodeAt(i);
+      const blob = new Blob([ab], { type: mimeString });
+
+      const formData = new FormData();
+      formData.append("fotoId", blob, "captura.jpg");
+
+      const response = await api.post<ReconocimientoResponse>(
+        "https://14j89qkn-8000.use.devtunnels.ms/almuerzo_check/webcam/service/",
+        formData
+      );
+
+      if (response.data.success) {
+        const info = response.data.data;
+
+        setEstudiante({
+          ...info,
+          fotoId:
+            info.fotoId ||
+            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
+        });
+
+        console.log("Estudiante reconocido:", info);
+        control_success(
+          response.data.detail || "Rostro reconocido correctamente ✅"
+        );
+        setOpenCam(false);
+      } else {
+        control_error("No se reconoció ningún rostro 😢");
+      }
+    } catch (error: any) {
+      control_error("Error al enviar la foto.");
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const handleClose = () => {
+    setEstudiante({ ...estudiante, id: 0 }); // borra la info para que desaparezca
   };
 
   return (
@@ -133,7 +189,6 @@ export const CheckEstudiante: React.FC = () => {
         m: 3,
       }}
     >
-      {/* Título */}
       <Grid size={{ xs: 12 }}>
         <Title title="Check Estudiante" />
       </Grid>
@@ -173,16 +228,10 @@ export const CheckEstudiante: React.FC = () => {
       </Grid>
 
       {/* Botones */}
-      <Grid container size={{ xs: 12 }} justifyContent="center" alignItems="center" spacing={2}>
+      <Grid size={{ xs: 12 }} display="flex" justifyContent="center" gap={2}>
         <Button
           variant="contained"
           color="primary"
-          sx={{
-            fontSize: "1rem",
-            borderRadius: "10px",
-            boxShadow: 3,
-            "&:hover": { backgroundColor: "#1565c0", transform: "scale(1.05)" },
-          }}
           onClick={() => setOpenCam(true)}
         >
           Reconocimiento Facial
@@ -192,100 +241,104 @@ export const CheckEstudiante: React.FC = () => {
           variant="contained"
           startIcon={<SearchIcon />}
           onClick={handleBuscar}
-          sx={{
-            fontSize: "1rem",
-            borderRadius: "10px",
-            boxShadow: 3,
-            "&:hover": { backgroundColor: "#2e7d32", transform: "scale(1.05)" },
-          }}
           color="success"
         >
           Buscar Estudiante
         </Button>
       </Grid>
 
-      {/* Resultado */}
-      {resultado && (
-        <Grid size={{ xs: 12 }}>
-          <Card sx={{ mt: 3, p: 2, backgroundColor: "#e8f5e9" }}>
-            <Typography variant="h6" gutterBottom>
-              ✅ Resultado de la búsqueda
-            </Typography>
-            <Typography variant="body1">
-              <strong>Nombre:</strong> {resultado.primer_nombre} {resultado.primer_apellido}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Identificación:</strong> {resultado.identificacion}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Grado:</strong> {resultado.grado} | <strong>Grupo:</strong>{" "}
-              {resultado.grupo} | <strong>Jornada:</strong> {resultado.jornada}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Créditos:</strong> {resultado.creditos}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Estado:</strong> {resultado.estado ? "Activo" : "Inactivo"}
-            </Typography>
-          </Card>
-        </Grid>
-      )}
+      <Info estudiante={estudiante} onClose={handleClose} />
 
-      {/* Modal Cámara */}
-    <Modal open={openCam} onClose={() => setOpenCam(false)}>
-  <Box
-    sx={{
-      position: "absolute" as "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      bgcolor: "background.paper",
-      boxShadow: 24,
-      p: 4,
-      borderRadius: 2,
-      textAlign: "center",
-      width: 450,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-    }}
-  >
-    <Typography variant="h6" gutterBottom>
-      Captura Facial
-    </Typography>
+      {/* Modal cámara */}
+      <Modal open={openCam} onClose={() => setOpenCam(false)}>
+        <Box
+          sx={{
+            position: "absolute" as "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            textAlign: "center",
+            width: 450,
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Captura Facial
+          </Typography>
 
-    {/* Siempre renderiza Webcam */}
-    <Webcam
-      audio={false}
-      ref={webcamRef}
-      screenshotFormat="image/jpeg"
-      videoConstraints={{ facingMode: "user" }}
-      style={{
-        width: 400,
-        height: 300,
-        borderRadius: "10px",
-        display: openCam ? "block" : "none", // Se muestra solo si openCam es true
-      }}
-    />
+          <Webcam
+            audio={false}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            videoConstraints={{ facingMode: "user" }}
+            style={{
+              width: 400,
+              height: 300,
+              borderRadius: "10px",
+            }}
+          />
 
-    <Button
-      variant="contained"
-      color="primary"
-      sx={{ mt: 2 }}
-      onClick={handleCapture}
-    >
-      Tomar Foto
-    </Button>
+          <Box sx={{ mt: 2 }}>
+            <Button variant="contained" color="primary" onClick={handleCapture}>
+              Tomar Foto
+            </Button>
 
-    {captura && (
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="body2">Previsualización:</Typography>
-        <img src={captura} alt="captura facial" style={{ width: "100%" }} />
-      </Box>
-    )}
-  </Box>
-</Modal>
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={<UploadIcon />}
+              sx={{ ml: 2 }}
+            >
+              Subir Imagen
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </Button>
+          </Box>
 
+          {captura && (
+            <Box
+              sx={{
+                mt: 2,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                Previsualización:
+              </Typography>
+              <img
+                src={captura}
+                alt="captura facial"
+                style={{
+                  width: "150px",
+                  height: "auto",
+                  borderRadius: "10px",
+                  border: "2px solid #ccc",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                }}
+              />
+            </Box>
+          )}
+
+          <Button
+            variant="contained"
+            color="success"
+            sx={{ mt: 2 }}
+            onClick={handleEnviarFoto}
+            disabled={enviando}
+          >
+            {enviando ? "Enviando..." : "Enviar Foto"}
+          </Button>
+        </Box>
+      </Modal>
     </Grid>
   );
 };

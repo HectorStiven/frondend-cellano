@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Grid,
   TextField,
@@ -9,7 +9,7 @@ import {
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import SearchIcon from "@mui/icons-material/Search";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import ClearIcon from "@mui/icons-material/Clear";
 import Swal from "sweetalert2";
 import { api } from "../../../../api/Axios";
 import { Title } from "../../../../Elements/Titulo/Titulo";
@@ -29,11 +29,15 @@ interface Acudiente {
   estudiante: number;
 }
 
+interface ListarAcudienteProps {
+  id?: number; // el id llega como prop
+}
+
 const initialData = {
   nombre: "",
 };
 
-export const ListarAcudiente: React.FC = () => {
+export const ListarAcudiente: React.FC<ListarAcudienteProps> = ({ id }) => {
   const [formData, setFormData] = useState(initialData);
   const [acudientes, setAcudientes] = useState<Acudiente[]>([]);
 
@@ -41,26 +45,32 @@ export const ListarAcudiente: React.FC = () => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const fetchAcudientes = async () => {
-    try {
-      // URL quemada
-      const res = await api.get<{ data: Acudiente[] }>("/almuerzo_check/usuarios/listar_acudientes/1/");
-      setAcudientes(res.data.data);
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "No se pudieron cargar los acudientes.", "error");
-    }
-  };
+const fetchAcudientes = useCallback(async () => {
+  if (!id) return;
 
-  useEffect(() => {
+  try {
+    const res = await api.get<{ data: Acudiente[] }>(
+      `/almuerzo_check/usuarios/listar_acudientes/${id}/`
+    );
+    setAcudientes(res.data.data);
+  } catch (error) {
+    console.error(error);
+    Swal.fire("Error", "No se pudieron cargar los acudientes.", "error");
+  }
+}, [id]);
+
+
+  const handleSearch = () => {
     fetchAcudientes();
-  }, []);
-
-  const handleSearch = () => fetchAcudientes();
-
-  const handleVerDetalle = (acudiente: Acudiente) => {
-    console.log("Ver detalle del acudiente:", acudiente);
   };
+
+  const handleClear = () => {
+    setFormData(initialData);
+    setAcudientes([]);
+  };
+useEffect(() => {
+  if (id) fetchAcudientes();
+}, [id, fetchAcudientes]);
 
   const columns: GridColDef[] = [
     { field: "nombre", headerName: "Nombre", flex: 1 },
@@ -78,17 +88,6 @@ export const ListarAcudiente: React.FC = () => {
         />
       ),
     },
-    {
-      field: "acciones",
-      headerName: "Acciones",
-      flex: 0.5,
-      renderCell: (params: any) => (
-        <VisibilityIcon
-          style={{ cursor: "pointer", color: "#1976d2" }}
-          onClick={() => handleVerDetalle(params.row)}
-        />
-      ),
-    },
   ];
 
   const textFieldStyle = {
@@ -98,6 +97,7 @@ export const ListarAcudiente: React.FC = () => {
     width: "95%",
     marginTop: 2,
   };
+
   const labelStyle = {
     fontSize: "1.2rem",
     width: "100%",
@@ -105,81 +105,114 @@ export const ListarAcudiente: React.FC = () => {
     letterSpacing: 0.5,
   };
 
-  return (
-     <Grid
-        sx={{
-          p: 4,
-          backgroundColor: "#fafafa",
-          borderRadius: 4,
-          boxShadow: 4,
-          m: 3,
-        }}
-        container
-        spacing={3}
-        justifyContent="center"
-        alignItems="center"
-      >
-        {/* Título */}
-        <Grid size={{ xs: 12 }}>
-          <Title title="Listar Acudientes" />
-        </Grid>
-
+  // Si no hay id, no muestra el contenido
+  if (!id) {
+    return (
       <Grid
         container
-        sx={{
-          p: 2,
-          background: "#FAFAFA",
-          borderRadius: "15px",
-          boxShadow: "0px 3px 6px #042F4A26",
-        }}
-        spacing={2}
+        justifyContent="center"
+        alignItems="center"
+        sx={{ height: "60vh" }}
       >
-        {/* Filtros */}
-        <Grid size={{ xs: 12, md: 8 }}>
-          <TextField
-            fullWidth
-            label="Nombre"
-            variant="outlined"
-            value={formData.nombre}
-            onChange={(e) => handleInputChange("nombre", e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <AccountCircle />
-                </InputAdornment>
-              ),
-              sx: textFieldStyle,
-            }}
-            InputLabelProps={{ sx: labelStyle }}
-          />
-        </Grid>
+        <Title title="No se ha seleccionado un estudiante" />
+      </Grid>
+    );
+  }
 
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Button
-            variant="contained"
-            startIcon={<SearchIcon />}
-            sx={{
-              width: "90%",
-              height: 60,
-              borderRadius: 20,
-              backgroundColor: "green",
-              fontSize: "1.1rem",
-              margin: 1,
-            }}
-            onClick={handleSearch}
-          >
-            Buscar
-          </Button>
-        </Grid>
+  return (
+    <Grid
+      sx={{
+        p: 4,
+        backgroundColor: "#fafafa",
+        borderRadius: 4,
+        boxShadow: 4,
+        m: 3,
+      }}
+      container
+      spacing={3}
+      justifyContent="center"
+      alignItems="center"
+    >
+      <Grid size={{ xs: 12 }}>
+        {/* Título */}
+        <Title title="Listar Acudientes" />
 
-        {/* Tabla */}
-        <Grid size={{ xs: 12 }}>
-          <DataGrid
-            rows={acudientes}
-            columns={columns}
-            autoHeight
-            getRowId={(row) => row.id}
-          />
+        <Grid
+          container
+          sx={{
+            p: 2,
+            background: "#FAFAFA",
+            borderRadius: "15px",
+            boxShadow: "0px 3px 6px #042F4A26",
+          }}
+          spacing={2}
+        >
+          {/* Filtros */}
+          <Grid size={{ xs: 12, md: 8 }}>
+            <TextField
+              fullWidth
+              label="Nombre"
+              variant="outlined"
+              value={formData.nombre}
+              onChange={(e) => handleInputChange("nombre", e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AccountCircle />
+                  </InputAdornment>
+                ),
+                sx: textFieldStyle,
+              }}
+              InputLabelProps={{ sx: labelStyle }}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<SearchIcon />}
+              sx={{
+                width: "90%",
+                height: 60,
+                borderRadius: 20,
+                backgroundColor: "green",
+                fontSize: "1.1rem",
+                margin: 1,
+              }}
+              onClick={handleSearch}
+            >
+              Buscar
+            </Button>
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<ClearIcon />}
+              sx={{
+                width: "90%",
+                height: 60,
+                borderRadius: 20,
+                fontSize: "1.1rem",
+                margin: 1,
+                color: "red",
+                borderColor: "red",
+              }}
+              onClick={handleClear}
+            >
+              Limpiar
+            </Button>
+          </Grid>
+
+          {/* Tabla */}
+          <Grid size={{ xs: 12 }}>
+            <DataGrid
+              rows={acudientes}
+              columns={columns}
+              autoHeight
+              getRowId={(row) => row.id}
+            />
+          </Grid>
         </Grid>
       </Grid>
     </Grid>

@@ -143,8 +143,7 @@ export const CheckEstudiante: React.FC = () => {
       const formData = new FormData();
       formData.append("fotoId", blob, "captura.jpg");
 
-      const response = await api.post<ReconocimientoResponse>(
-        "https://14j89qkn-8000.use.devtunnels.ms/almuerzo_check/webcam/service/",
+      const response = await api.post<ReconocimientoResponse>("/almuerzo_check/webcam/service/",
         formData
       );
 

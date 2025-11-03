@@ -48,7 +48,9 @@ const initialData = {
 export const ListarEstudiantes: React.FC = () => {
   const [formData, setFormData] = useState(initialData);
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null); // 👈 id del estudiante seleccionado
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(
+    null
+  ); // 👈 id del estudiante seleccionado
 
   const handleInputChange = (
     field: keyof typeof initialData,
@@ -124,8 +126,7 @@ export const ListarEstudiantes: React.FC = () => {
             sx={{ backgroundColor: "orange" }}
             onClick={() => handleShowAcudientes(params.row.id)}
           >
-            <GroupIcon sx={{ mr: 1 }} />
-            Acudientes
+            <GroupIcon />
           </Button>
 
           {/* Mantienes tu botón existente */}

@@ -23,7 +23,7 @@ import { ImagenPortada } from "./ImagenPortada";
 import { CustomizedSwitches } from "./ModoOscuro";
 import { MenuUsuarioVisual } from "./MenuUsuario/MenuUsuario";
 
-const pages = [ "Menu", "Sugerencias", "CreditosPagos", "Consumos","Estudiantes","ChatBot","MenuAdmin","Check"];
+const pages = [ "Menu", "Sugerencias", "CreditosPagos", "Consumos","Estudiantes","ChatBot","MenuAdmin","Check","ListaSugerencias"];
 export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const [openDrawer, setOpenDrawer] = useState(false);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Grid, Typography, Box } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Calendar from "react-calendar";
@@ -6,6 +6,8 @@ import "react-calendar/dist/Calendar.css";
 import { Title } from "../../Elements/Titulo/Titulo";
 import { Geolocalizacion } from "../../Elements/Mapa/Mapa";
 import { api } from "../../api/Axios";
+import { RootState } from "../../store";
+import { useSelector } from "react-redux";
 
 // 🧩 Interfaces
 interface Consumo {
@@ -27,18 +29,19 @@ interface ConsumoResponse {
 export const Consumos = () => {
   const [consumos, setConsumos] = useState<Consumo[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
+  const estudianteInfo = useSelector(
+    (state: RootState) => state.auth.estudiante_info
+  );
   // 📡 Petición API
-  const fetchConsumos = async () => {
+
+  const fetchConsumos = useCallback(async () => {
+    const id = estudianteInfo?.id || 0;
     try {
       const res = await api.get<ConsumoResponse>(
-        "/almuerzo_check/consumos/estudiante/25/"
+        `/almuerzo_check/consumos/estudiante/${id}/`
       );
-
-      if (res.data && res.data.success && Array.isArray(res.data.data)) {
+      if (res.data?.success && Array.isArray(res.data.data)) {
         setConsumos(res.data.data);
-      } else {
-        throw new Error("Formato inesperado en la respuesta del servidor.");
       }
     } catch (err: any) {
       const message =
@@ -47,11 +50,11 @@ export const Consumos = () => {
         "Error desconocido al obtener los consumos.";
       console.error("❌ Error API:", message);
     }
-  };
+  }, [estudianteInfo?.id]);
 
   useEffect(() => {
     fetchConsumos();
-  }, []);
+  }, [fetchConsumos]);
 
   // 🎨 Calcular conteo de consumos por fecha
   const conteoPorFecha = consumos.reduce((acc: Record<string, number>, c) => {

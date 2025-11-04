@@ -10,17 +10,21 @@ import {
 } from "@mui/material";
 import { Feedback, Send, PhotoCamera } from "@mui/icons-material";
 import { Title } from "../../Elements/Titulo/Titulo";
-
-
+import { control_error } from "../../Elements/alertas/alertaError";
+import { control_success } from "../../Elements/alertas/alertaSucces";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { api } from "../../api/Axios";
 
 export const Sugerencias = () => {
-  const [nombre, setNombre] = useState("");
   const [platillo, setPlatillo] = useState("");
   const [comentario, setComentario] = useState("");
   const [calificacion, setCalificacion] = useState<number | null>(0);
   const [foto, setFoto] = useState<string | null>(null);
+  const estudianteInfo = useSelector(
+    (state: RootState) => state.auth.estudiante_info
+  );
   const [enviada, setEnviada] = useState(false);
-  const [error, setError] = useState(false);
 
   const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,27 +35,53 @@ export const Sugerencias = () => {
     }
   };
 
-  const handleEnviar = () => {
-    if (
-      !nombre.trim() ||
-      !platillo.trim() ||
-      !comentario.trim() ||
-      !calificacion
-    ) {
-      setError(true);
+  const handleEnviar = async () => {
+    if (!platillo.trim() || !comentario.trim() || !calificacion) {
+      control_error("❌ Por favor, completa todos los campos antes de enviar.");
       return;
     }
 
-    // Simula envío exitoso
-    setNombre("");
-    setPlatillo("");
-    setComentario("");
-    setCalificacion(0);
-    setFoto(null);
-    setError(false);
-    setEnviada(true);
+    if (!estudianteInfo) {
+      control_error("❌ No se encontró información del estudiante.");
+      return;
+    }
 
-    setTimeout(() => setEnviada(false), 2000);
+    try {
+      const formData = new FormData();
+      formData.append("estudiante", estudianteInfo.id.toString());
+      formData.append("menu",platillo); // Cambiar según corresponda
+      formData.append("comentario", comentario);
+      formData.append("calificacion", calificacion!.toString());
+
+      if (foto) {
+        const blob = await fetch(foto).then((res) => res.blob());
+        formData.append("fotoId", blob, "foto.jpg");
+      }
+
+      // Envío con la misma forma que tu login
+      const res = await api.post(
+        "/almuerzo_check/sugerencias/crear/",
+        formData
+      );
+      console.log(res.data);
+      control_success("✅ Sugerencia enviada con éxito!");
+      setEnviada(true);
+
+      // Limpiar formulario
+      setPlatillo("");
+      setComentario("");
+      setCalificacion(0);
+      setFoto(null);
+
+      // Opcional: reset estado del icono después de 2s
+      setTimeout(() => setEnviada(false), 2000);
+    } catch (error: any) {
+      const isAxiosError = error.isAxiosError || error.response;
+      const mensaje =
+        (isAxiosError && error.response?.data?.detail) ||
+        "❌ Error al enviar sugerencia";
+      control_error(mensaje);
+    }
   };
 
   return (
@@ -76,9 +106,17 @@ export const Sugerencias = () => {
           <Title title="Sugerencias del Restaurante Escolar" />
         </Grid>
 
-        {/* Ícono principal */}
+        {/* Ícono principal con animación */}
         <Grid size={{ xs: 12 }}>
-          <Feedback sx={{ fontSize: 70, color: "#1976d2", mb: 1 }} />
+          <Box sx={{ mb: 1, display: "flex", justifyContent: "center" }}>
+            <Feedback
+              sx={{
+                fontSize: enviada ? 90 : 70,
+                color: enviada ? "success.main" : "#1976d2",
+                transition: "all 0.5s ease",
+              }}
+            />
+          </Box>
 
           <Zoom in={enviada}>
             <Typography
@@ -89,31 +127,10 @@ export const Sugerencias = () => {
               ¡Sugerencia enviada con éxito!
             </Typography>
           </Zoom>
-
-          {error && (
-            <Typography variant="body2" color="error" sx={{ mb: 1 }}>
-              Por favor, completa todos los campos antes de enviar.
-            </Typography>
-          )}
         </Grid>
 
         {/* Campos del formulario */}
         <Grid size={{ xs: 12, md: 8 }}>
-          <TextField
-            label="Nombre del estudiante"
-            variant="outlined"
-            fullWidth
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            sx={{
-              mb: 2,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "12px",
-                backgroundColor: "#fff",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-              },
-            }}
-          />
           <TextField
             label="Platillo sugerido"
             variant="outlined"
@@ -147,7 +164,6 @@ export const Sugerencias = () => {
             }}
           />
 
-          {/* Calificación */}
           <Box
             display="flex"
             alignItems="center"
@@ -161,7 +177,6 @@ export const Sugerencias = () => {
             />
           </Box>
 
-          {/* Subir foto */}
           <Box display="flex" justifyContent="center" sx={{ mb: 2 }}>
             <Button
               variant="outlined"
@@ -174,11 +189,15 @@ export const Sugerencias = () => {
               }}
             >
               Agregar foto
-              <input type="file" hidden accept="image/*" onChange={handleFotoChange} />
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleFotoChange}
+              />
             </Button>
           </Box>
 
-          {/* Vista previa */}
           {foto && (
             <Box display="flex" justifyContent="center" sx={{ mb: 2 }}>
               <img

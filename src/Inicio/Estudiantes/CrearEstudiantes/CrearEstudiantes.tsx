@@ -31,7 +31,7 @@ import { control_error } from "../../../Elements/alertas/alertaError";
 import { api } from "../../../api/Axios";
 import Webcam from "react-webcam";
 
-interface EstudiantesForm {
+export interface EstudiantesForm {
   identificacion: string;
   tipo_documento: string;
   primer_nombre: string;
@@ -47,7 +47,7 @@ interface EstudiantesForm {
   grupo: string;
   jornada: string;
   año_ingreso: number;
-  fotold?: File | null;
+  fotoId?: File | null;
 }
 
 export const ModalCrearEstudiantes: React.FC = () => {
@@ -68,7 +68,7 @@ export const ModalCrearEstudiantes: React.FC = () => {
     grupo: "",
     jornada: "",
     año_ingreso: new Date().getFullYear(),
-    fotold: null,
+    fotoId: null,
   });
 
   const [preview, setPreview] = useState<string | null>(null);
@@ -82,7 +82,7 @@ export const ModalCrearEstudiantes: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setForm({ ...form, fotold: file });
+      setForm({ ...form, fotoId: file });
       setPreview(URL.createObjectURL(file));
       setUsingCamera(false);
     }
@@ -94,7 +94,7 @@ export const ModalCrearEstudiantes: React.FC = () => {
       if (imageSrc) {
         setPreview(imageSrc);
         const blob = dataURLtoFile(imageSrc, "captura.jpg");
-        setForm({ ...form, fotold: blob });
+        setForm({ ...form, fotoId: blob });
         setUsingCamera(false);
       }
     }
@@ -159,7 +159,7 @@ export const ModalCrearEstudiantes: React.FC = () => {
       grupo: "",
       jornada: "",
       año_ingreso: new Date().getFullYear(),
-      fotold: null,
+      fotoId: null,
     });
     setPreview(null);
     setUsingCamera(false);

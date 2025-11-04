@@ -1,13 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
-  TextField,
-  InputAdornment,
-  Grid,
   Button,
+  Grid,
   Dialog,
-  DialogContent,
   DialogActions,
+  DialogContent,
+  TextField,
+  Avatar,
+  MenuItem,
+  Box,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
+import UploadIcon from "@mui/icons-material/Upload";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import PersonIcon from "@mui/icons-material/Person";
 import BadgeIcon from "@mui/icons-material/Badge";
 import EventIcon from "@mui/icons-material/Event";
@@ -18,13 +25,194 @@ import SchoolIcon from "@mui/icons-material/School";
 import GroupIcon from "@mui/icons-material/Group";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import SaveIcon from "@mui/icons-material/Save";
-import CancelIcon from "@mui/icons-material/Cancel";
-import EditIcon from "@mui/icons-material/Edit";
+import Webcam from "react-webcam";
 import { Title } from "../../../Elements/Titulo/Titulo";
+import { api } from "../../../api/Axios";
+import EditIcon from "@mui/icons-material/Edit";
 
-export const ModalEditarEstudiantes: React.FC = () => {
+interface EstudiantesForm {
+  identificacion: string;
+  tipo_documento: string;
+  primer_nombre: string;
+  segundo_nombre?: string;
+  primer_apellido: string;
+  segundo_apellido?: string;
+  genero: string;
+  fecha_nacimiento: string;
+  direccion: string;
+  telefono: string;
+  correo?: string;
+  grado: string;
+  grupo: string;
+  jornada: string;
+  año_ingreso: number;
+  fotoId?: File | null;
+}
+
+export const ModalEditarEstudiantes: React.FC<{ id: number }> = ({ id }) => {
   const [open, setOpen] = useState(false);
+  const [form, setForm] = useState<EstudiantesForm>({
+    identificacion: "",
+    tipo_documento: "",
+    primer_nombre: "",
+    segundo_nombre: "",
+    primer_apellido: "",
+    segundo_apellido: "",
+    genero: "",
+    fecha_nacimiento: "",
+    direccion: "",
+    telefono: "",
+    correo: "",
+    grado: "",
+    grupo: "",
+    jornada: "",
+    año_ingreso: new Date().getFullYear(),
+    fotoId: null,
+  });
+
+  const [preview, setPreview] = useState<string | null>(null);
+  const [usingCamera, setUsingCamera] = useState(false);
+  const webcamRef = useRef<Webcam>(form.fotoId ? null : null);
+
+  const fetchEstudiantes = useCallback(async () => {
+    try {
+      const res = await api.get<{ data: EstudiantesForm }>(
+        `/almuerzo_check/usuarios/obtener_estudiante/${id}/`
+      );
+      const estudianteData = res.data.data;
+      setForm(estudianteData);
+
+      if (estudianteData.fotoId) {
+        setPreview(
+          typeof estudianteData.fotoId === "string" ? estudianteData.fotoId : ""
+        );
+      } else {
+        setPreview(null);
+      }
+    } catch (error: any) {
+      console.error(error.response?.data?.detail || error.message);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchEstudiantes();
+  }, [fetchEstudiantes]);
+  const handleInputChange = (field: keyof EstudiantesForm, value: any) => {
+    setForm({ ...form, [field]: value });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setForm({ ...form, fotoId: file });
+      setPreview(URL.createObjectURL(file));
+      setUsingCamera(false);
+    }
+  };
+
+  const handleCapture = () => {
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (imageSrc) {
+        setPreview(imageSrc);
+        const blob = dataURLtoFile(imageSrc, "captura.jpg");
+        setForm({ ...form, fotoId: blob });
+        setUsingCamera(false);
+      }
+    }
+  };
+
+  const dataURLtoFile = (dataurl: string, filename: string): File => {
+    const arr = dataurl.split(",");
+    const mime = arr[0].match(/:(.*?);/)?.[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  };
+
+  const handleClickOpen = () => setOpen(true);
+  const handleClose = () => {
+    setOpen(false);
+    setUsingCamera(false);
+  };
+
+  const handleSave = async () => {
+    try {
+      if (!id) return; // Validar que tenemos el id del estudiante
+
+      const formDataToSend = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          // Solo enviar foto si es un File
+          if (key === "fotoId" && !(value instanceof File)) return;
+
+          formDataToSend.append(key, value as any);
+        }
+      });
+
+      // Petición PUT a la API
+      const res = await api.put(
+        `/almuerzo_check/usuarios/editar_estudiante/${id}/`,
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("Estudiante actualizado:", res.data);
+      handleClose(); // Cierra el modal al finalizar
+    } catch (error: any) {
+      console.error(
+        "Error al actualizar estudiante:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  const handleClear = () => {
+    setForm({
+      identificacion: "",
+      tipo_documento: "",
+      primer_nombre: "",
+      segundo_nombre: "",
+      primer_apellido: "",
+      segundo_apellido: "",
+      genero: "",
+      fecha_nacimiento: "",
+      direccion: "",
+      telefono: "",
+      correo: "",
+      grado: "",
+      grupo: "",
+      jornada: "",
+      año_ingreso: new Date().getFullYear(),
+      fotoId: null,
+    });
+    setPreview(null);
+    setUsingCamera(false);
+  };
+
+  const grados = [
+    "Primero",
+    "Segundo",
+    "Tercero",
+    "Cuarto",
+    "Quinto",
+    "Sexto",
+    "Séptimo",
+    "Octavo",
+    "Noveno",
+    "Décimo",
+    "Once",
+  ];
+  const tiposDocumento = ["CC", "TI", "CE", "RC"];
+  const jornadas = ["Mañana", "Tarde", "Noche"];
 
   const textFieldStyle = {
     borderRadius: "20px",
@@ -33,33 +221,12 @@ export const ModalEditarEstudiantes: React.FC = () => {
   };
   const labelStyle = { fontSize: "1.2rem" };
 
-  const handleClickOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
   return (
     <>
-      {/* Botón para abrir el modal */}
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<EditIcon />}
-        onClick={handleClickOpen}
-        sx={{
-          fontSize: "1.2rem",
-          padding: "12px 24px",
-          borderRadius: "12px",
-          transition: "all 0.3s ease",
-          "&:hover": {
-            transform: "scale(1.05)",
-            backgroundColor: "orange",
-            boxShadow: 6,
-          },
-        }}
-      >
-        Editar Estudiante
+      <Button variant="contained" color="primary" onClick={handleClickOpen}>
+        <EditIcon />
       </Button>
 
-      {/* Modal */}
       <Dialog
         open={open}
         onClose={handleClose}
@@ -73,122 +240,196 @@ export const ModalEditarEstudiantes: React.FC = () => {
               <Title title="Editar Estudiante" />
             </Grid>
 
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Identificación"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <BadgeIcon />
-                    </InputAdornment>
-                  ),
-                  sx: textFieldStyle,
-                }}
-                InputLabelProps={{ sx: labelStyle }}
-              />
+            {/* Foto */}
+            <Grid
+              size={{ xs: 12, md: 4 }}
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+            >
+              {usingCamera ? (
+                <Box display="flex" flexDirection="column" alignItems="center">
+                  <Webcam
+                    ref={webcamRef}
+                    audio={false}
+                    screenshotFormat="image/jpeg"
+                    width={220}
+                    videoConstraints={{ facingMode: "user" }}
+                    style={{ borderRadius: "10px", marginBottom: "10px" }}
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleCapture}
+                  >
+                    Capturar
+                  </Button>
+                </Box>
+              ) : (
+                <>
+                  <Avatar
+                    src={preview || ""}
+                    sx={{
+                      width: 140,
+                      height: 140,
+                      mb: 1,
+                      border: "2px solid #ccc",
+                    }}
+                  />
+                  <Box display="flex" gap={1}>
+                    <Button
+                      variant="contained"
+                      component="label"
+                      startIcon={<UploadIcon />}
+                      sx={{ borderRadius: "10px" }}
+                    >
+                      Subir Foto
+                      <input
+                        hidden
+                        accept="image/*"
+                        type="file"
+                        onChange={handleFileChange}
+                      />
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      startIcon={<CameraAltIcon />}
+                      onClick={() => setUsingCamera(true)}
+                      sx={{ borderRadius: "10px" }}
+                    >
+                      Tomar Foto
+                    </Button>
+                  </Box>
+                </>
+              )}
             </Grid>
 
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Tipo Documento"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <BadgeIcon />
-                    </InputAdornment>
-                  ),
-                  sx: textFieldStyle,
-                }}
-                InputLabelProps={{ sx: labelStyle }}
-              />
+            {/* Campos generales */}
+            <Grid size={{ xs: 12, md: 8 }}>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="Tipo Documento"
+                    value={form.tipo_documento}
+                    onChange={(e) =>
+                      handleInputChange("tipo_documento", e.target.value)
+                    }
+                    InputProps={{
+                      startAdornment: <BadgeIcon />,
+                      sx: textFieldStyle,
+                    }}
+                    InputLabelProps={{ sx: labelStyle }}
+                    required
+                  >
+                    {tiposDocumento.map((tipo) => (
+                      <MenuItem key={tipo} value={tipo}>
+                        {tipo}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Identificación"
+                    value={form.identificacion}
+                    onChange={(e) =>
+                      handleInputChange("identificacion", e.target.value)
+                    }
+                    InputProps={{
+                      startAdornment: <BadgeIcon />,
+                      sx: textFieldStyle,
+                    }}
+                    InputLabelProps={{ sx: labelStyle }}
+                    required
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Primer Nombre"
+                    value={form.primer_nombre}
+                    onChange={(e) =>
+                      handleInputChange("primer_nombre", e.target.value)
+                    }
+                    InputProps={{
+                      startAdornment: <PersonIcon />,
+                      sx: textFieldStyle,
+                    }}
+                    InputLabelProps={{ sx: labelStyle }}
+                    required
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Segundo Nombre"
+                    value={form.segundo_nombre}
+                    onChange={(e) =>
+                      handleInputChange("segundo_nombre", e.target.value)
+                    }
+                    InputProps={{
+                      startAdornment: <PersonIcon />,
+                      sx: textFieldStyle,
+                    }}
+                    InputLabelProps={{ sx: labelStyle }}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Primer Apellido"
+                    value={form.primer_apellido}
+                    onChange={(e) =>
+                      handleInputChange("primer_apellido", e.target.value)
+                    }
+                    InputProps={{
+                      startAdornment: <PersonIcon />,
+                      sx: textFieldStyle,
+                    }}
+                    InputLabelProps={{ sx: labelStyle }}
+                    required
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Segundo Apellido"
+                    value={form.segundo_apellido}
+                    onChange={(e) =>
+                      handleInputChange("segundo_apellido", e.target.value)
+                    }
+                    InputProps={{
+                      startAdornment: <PersonIcon />,
+                      sx: textFieldStyle,
+                    }}
+                    InputLabelProps={{ sx: labelStyle }}
+                  />
+                </Grid>
+              </Grid>
             </Grid>
 
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Primer Nombre"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon />
-                    </InputAdornment>
-                  ),
-                  sx: textFieldStyle,
-                }}
-                InputLabelProps={{ sx: labelStyle }}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Segundo Nombre"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon />
-                    </InputAdornment>
-                  ),
-                  sx: textFieldStyle,
-                }}
-                InputLabelProps={{ sx: labelStyle }}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Primer Apellido"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon />
-                    </InputAdornment>
-                  ),
-                  sx: textFieldStyle,
-                }}
-                InputLabelProps={{ sx: labelStyle }}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Segundo Apellido"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon />
-                    </InputAdornment>
-                  ),
-                  sx: textFieldStyle,
-                }}
-                InputLabelProps={{ sx: labelStyle }}
-              />
-            </Grid>
-
+            {/* Resto de campos */}
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
-                size="small"
                 label="Género"
+                value={form.genero}
+                onChange={(e) => handleInputChange("genero", e.target.value)}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <PersonIcon />,
                   sx: textFieldStyle,
                 }}
                 InputLabelProps={{ sx: labelStyle }}
+                placeholder="M/F"
+                required
               />
             </Grid>
 
@@ -196,83 +437,74 @@ export const ModalEditarEstudiantes: React.FC = () => {
               <TextField
                 fullWidth
                 type="date"
-                size="small"
                 label="Fecha de Nacimiento"
+                value={form.fecha_nacimiento}
+                onChange={(e) =>
+                  handleInputChange("fecha_nacimiento", e.target.value)
+                }
                 InputLabelProps={{ shrink: true, sx: labelStyle }}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EventIcon />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <EventIcon />,
                   sx: textFieldStyle,
                 }}
+                required
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
-                size="small"
                 label="Grupo"
+                value={form.grupo}
+                onChange={(e) => handleInputChange("grupo", e.target.value)}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <GroupIcon />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <GroupIcon />,
                   sx: textFieldStyle,
                 }}
                 InputLabelProps={{ sx: labelStyle }}
+                required
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
-                size="small"
                 label="Dirección"
+                value={form.direccion}
+                onChange={(e) => handleInputChange("direccion", e.target.value)}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <HomeIcon />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <HomeIcon />,
                   sx: textFieldStyle,
                 }}
                 InputLabelProps={{ sx: labelStyle }}
+                required
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
-                size="small"
                 label="Teléfono"
+                value={form.telefono}
+                onChange={(e) => handleInputChange("telefono", e.target.value)}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PhoneIcon />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <PhoneIcon />,
                   sx: textFieldStyle,
                 }}
                 InputLabelProps={{ sx: labelStyle }}
+                required
               />
             </Grid>
 
-            <Grid size={{ xs: 12, md: 8 }}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 type="email"
-                size="small"
                 label="Correo Electrónico"
+                value={form.correo}
+                onChange={(e) => handleInputChange("correo", e.target.value)}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EmailIcon />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <EmailIcon />,
                   sx: textFieldStyle,
                 }}
                 InputLabelProps={{ sx: labelStyle }}
@@ -282,86 +514,91 @@ export const ModalEditarEstudiantes: React.FC = () => {
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
-                size="small"
+                select
                 label="Grado"
+                value={form.grado}
+                onChange={(e) => handleInputChange("grado", e.target.value)}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SchoolIcon />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <SchoolIcon />,
                   sx: textFieldStyle,
                 }}
                 InputLabelProps={{ sx: labelStyle }}
-              />
+                required
+              >
+                {grados.map((g) => (
+                  <MenuItem key={g} value={g}>
+                    {g}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
-                size="small"
+                select
                 label="Jornada"
+                value={form.jornada}
+                onChange={(e) => handleInputChange("jornada", e.target.value)}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AccessTimeIcon />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <AccessTimeIcon />,
                   sx: textFieldStyle,
                 }}
                 InputLabelProps={{ sx: labelStyle }}
-              />
+                required
+              >
+                {jornadas.map((j) => (
+                  <MenuItem key={j} value={j}>
+                    {j}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
-                size="small"
                 type="number"
                 label="Año de Ingreso"
+                value={form.año_ingreso}
+                onChange={(e) =>
+                  handleInputChange("año_ingreso", parseInt(e.target.value))
+                }
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CalendarTodayIcon />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <CalendarTodayIcon />,
                   sx: textFieldStyle,
                 }}
                 InputLabelProps={{ sx: labelStyle }}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                fullWidth
-                size="small"
-                type="number"
-                label="Créditos"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SchoolIcon />
-                    </InputAdornment>
-                  ),
-                  sx: textFieldStyle,
-                }}
-                InputLabelProps={{ sx: labelStyle }}
+                required
               />
             </Grid>
           </Grid>
         </DialogContent>
 
-        <DialogActions sx={{ justifyContent: "center", mb: 2 }}>
-          <Button variant="contained" color="primary" startIcon={<SaveIcon />}>
-            Actualizar
-          </Button>
+        <DialogActions>
           <Button
             variant="outlined"
             color="secondary"
             startIcon={<CancelIcon />}
+            onClick={handleClear}
+          >
+            Limpiar
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<SaveIcon />}
+            onClick={handleSave}
+          >
+            Guardar
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<CloseIcon />}
             onClick={handleClose}
           >
-            Cancelar
+            Cerrar
           </Button>
         </DialogActions>
       </Dialog>

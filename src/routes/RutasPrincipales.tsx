@@ -14,6 +14,7 @@ import { ListarEstudiantes } from "../Inicio/Estudiantes/ListarEstidantes/Listar
 import { ListarMenu } from "../Inicio/Menu/ListarMenu/ListarMenu";
 import { CheckEstudiante } from "../Inicio/Check/Check";
 import { ListaSugerencias } from "../Inicio/ListaSugerencias/ListaSugerencias";
+import { Reportes } from "../Inicio/Reportes/Reportes";
 
 export const RutasPrincipales = () => {
   const { modo_dark_numero } = useContext(AlertasContext);
@@ -52,6 +53,8 @@ export const RutasPrincipales = () => {
         <Route path="/Check" element={<CheckEstudiante />} />
 
         <Route path="/ListaSugerencias" element={<ListaSugerencias />} />
+
+        <Route path="/Reportes" element={<Reportes />} />
 
         <Route path="*" element={<Page404 />} />
       </Routes>

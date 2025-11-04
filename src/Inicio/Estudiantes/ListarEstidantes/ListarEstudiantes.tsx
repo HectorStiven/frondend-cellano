@@ -17,7 +17,6 @@ import BadgeIcon from "@mui/icons-material/Badge";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import GroupIcon from "@mui/icons-material/Group"; // 👈 ícono para "Alumnos"
 import { api } from "../../../api/Axios";
 import { Title } from "../../../Elements/Titulo/Titulo";
@@ -108,9 +107,8 @@ export const ListarEstudiantes: React.FC = () => {
       flex: 1.8,
       renderCell: (params: any) => (
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button variant="contained" sx={{ backgroundColor: "blue" }}>
-            <EditIcon />
-          </Button>
+            <ModalEditarEstudiantes id={params.row.id} />
+      
 
           <Button
             variant="contained"
@@ -301,12 +299,7 @@ export const ListarEstudiantes: React.FC = () => {
         >
           <ModalCrearEstudiantes />
         </Grid>
-        <Grid
-          size={{ xs: 6 }}
-          sx={{ display: "flex", justifyContent: "center" }}
-        >
-          <ModalEditarEstudiantes />
-        </Grid>
+      
       </Grid>
 
       {/* 👇 Aquí se muestra ListarAcudiente solo si se seleccionó un estudiante */}

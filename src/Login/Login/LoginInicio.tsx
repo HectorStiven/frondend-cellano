@@ -26,7 +26,7 @@ import {
 import { RecuperarContext } from "../../Elements/Context/RecuperarContraseña";
 import { api } from "../../api/Axios";
 import { useDispatch } from "react-redux";
-import { setAuthData } from "../toolkit/slice/AutenticacionRedux";
+import { EstudianteInfo, setAuthData } from "../toolkit/slice/AutenticacionRedux";
 import { control_error } from "../../Elements/alertas/alertaError";
 import { control_success } from "../../Elements/alertas/alertaSucces";
 
@@ -42,6 +42,7 @@ interface LoginResponse {
     rol: string;
     creado_en: string;
     estudiante: number;
+    estudiante_info:EstudianteInfo;
   };
   token: string;
 }
@@ -51,7 +52,7 @@ interface LoginResponse {
 // ==============================
 export const Login = () => {
   const [username, setUsername] = useState("djstiven3");
-  const [password, setPassword] = useState("159637");
+  const [password, setPassword] = useState("123456");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -71,16 +72,18 @@ export const Login = () => {
 
       const { data, token } = res.data;
 
-      // Guardar en Redux
-      dispatch(
-        setAuthData({
-          token,
-          nombreUsuario: data.username,
-          tipoUsuario: data.rol,
-          access: true,
-          estudiante_id: data.estudiante,
-        })
-      );
+    dispatch(
+  setAuthData({
+    token,
+    data: {
+      id: data.id,
+      username: data.username,
+      rol: data.rol,
+      estudiante: data.estudiante,
+      estudiante_info: data.estudiante_info,
+    },
+  })
+);
 
       control_success("✅ Login exitoso");
     } catch (error: any) {

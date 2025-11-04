@@ -22,12 +22,26 @@ import { useState } from "react";
 import { ImagenPortada } from "./ImagenPortada";
 import { CustomizedSwitches } from "./ModoOscuro";
 import { MenuUsuarioVisual } from "./MenuUsuario/MenuUsuario";
+import { RootState } from "../../store";
+import { useSelector } from "react-redux";
 
-const pages = [ "Menu", "Sugerencias", "CreditosPagos", "Consumos","Estudiantes","ChatBot","MenuAdmin","Check","ListaSugerencias"];
+const pages = [
+  // "Menu",
+  "Sugerencias",
+  // "CreditosPagos",
+  "Consumos",
+  "Estudiantes",
+  // "ChatBot",
+  "MenuAdmin",
+  "Check",
+  "ListaSugerencias",
+  "Reportes",
+];
 export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [openDrawer_info, setOpenDrawer_info] = useState(false);
+  const authState = useSelector((state: RootState) => state.auth);
 
   const navigate = useNavigate();
 
@@ -92,7 +106,8 @@ export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
                       sx={{
                         "&:hover": {
                           backgroundColor: "rgba(255, 255, 255, 1)",
-                          border: "2px solid rgba(19, 3, 255, 1)" /* Borde delineado */,
+                          border:
+                            "2px solid rgba(19, 3, 255, 1)" /* Borde delineado */,
                         },
                       }}
                     >
@@ -154,7 +169,10 @@ export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
                   <IconButton onClick={handleOpenDrawer} sx={{ p: 0 }}>
                     <Avatar
                       alt="Remy Sharp"
-                      src="/image/menu/profe.jpg"
+                      src={
+                        authState.estudiante_info?.fotoId ||
+                        "/image/menu/profe.jpg"
+                      }
                     />
                   </IconButton>
                 </>

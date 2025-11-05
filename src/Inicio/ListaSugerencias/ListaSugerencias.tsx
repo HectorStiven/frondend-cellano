@@ -15,13 +15,23 @@ import { Title } from "../../Elements/Titulo/Titulo";
 import { api } from "../../api/Axios";
 import { download_pdf } from "../../Elements/DescargarDocumentos/PDF_descargar";
 import { download_xls } from "../../Elements/DescargarDocumentos/XLS_descargar";
+import { ModalDetalleSugerencias } from "./ModalDetalleSugerencias/ModalDetalleSugerencias";
+
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 // ======================
 // 📘 Interfaces
 // ======================
 
+interface Estudiante {
+  fotoId: string;
+  identificacion: string;
+  grado: string;
+}
+
 interface Sugerencia {
   id: number;
+  estudiante: Estudiante;
   comentario: string;
   calificacion: number;
   fecha: string;
@@ -37,26 +47,17 @@ export const ListaSugerencias: React.FC = () => {
   const [sugerencias, setSugerencias] = useState<Sugerencia[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedSugerencia, setSelectedSugerencia] = useState<Sugerencia | null>(null);
+
   // 🔹 Obtener todas las sugerencias
   const fetchSugerencias = async () => {
     setLoading(true);
     try {
-      const res = await api.get<{ data: any[] }>(
-        "/almuerzo_check/sugerencias/listar/"
-      );
-      const datos = res.data.data.map((item) => ({
-        id: item.id,
-        comentario: item.comentario,
-        calificacion: item.calificacion,
-        fecha: item.fecha,
-        fotoId: item.fotoId,
-        menu: item.menu,
-      }));
-      setSugerencias(datos);
+      const res = await api.get<{ data: Sugerencia[] }>("/almuerzo_check/sugerencias/listar/");
+      setSugerencias(res.data.data);
     } catch (error: any) {
-      console.error(
-        error?.response?.data?.detail || "Error al obtener sugerencias"
-      );
+      console.error(error?.response?.data?.detail || "Error al obtener sugerencias");
     } finally {
       setLoading(false);
     }
@@ -69,10 +70,14 @@ export const ListaSugerencias: React.FC = () => {
       setSugerencias((prev) => prev.filter((s) => s.id !== id));
       console.log(`Sugerencia con ID ${id} eliminada`);
     } catch (error: any) {
-      console.error(
-        error?.response?.data?.detail || "Error al eliminar sugerencia"
-      );
+      console.error(error?.response?.data?.detail || "Error al eliminar sugerencia");
     }
+  };
+
+  // 🔹 Abrir modal con sugerencia seleccionada
+  const handleOpenModal = (sugerencia: Sugerencia) => {
+    setSelectedSugerencia(sugerencia);
+    setOpenModal(true);
   };
 
   useEffect(() => {
@@ -90,11 +95,7 @@ export const ListaSugerencias: React.FC = () => {
       width: 80,
       renderCell: (params: GridRenderCellParams) => (
         <Grid container justifyContent="center" alignItems="center">
-          <Avatar
-            src={params.row.fotoId}
-            alt="Foto sugerencia"
-            sx={{ width: 45, height: 45 }}
-          />
+          <Avatar src={params.row.estudiante.fotoId} alt="Foto estudiante" sx={{ width: 45, height: 45 }} />
         </Grid>
       ),
     },
@@ -113,7 +114,7 @@ export const ListaSugerencias: React.FC = () => {
             maxHeight: "none",
           }}
         >
-          {params.value}
+          {params.row.comentario}
         </Typography>
       ),
     },
@@ -130,7 +131,7 @@ export const ListaSugerencias: React.FC = () => {
       headerName: "Fecha",
       width: 200,
       renderCell: (params: GridRenderCellParams) => {
-        const fecha = params.row?.fecha;
+        const fecha = params.row.fecha;
         if (!fecha) return "—";
         const d = new Date(fecha);
         return (
@@ -151,15 +152,20 @@ export const ListaSugerencias: React.FC = () => {
     {
       field: "acciones",
       headerName: "Acciones",
-      width: 120,
+      width: 150,
       renderCell: (params: GridRenderCellParams) => (
-        <Button
-          variant="contained"
-          sx={{ backgroundColor: "red" }}
-          onClick={() => deleteSugerencia(params.row.id)}
-        >
-          <DeleteIcon />
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            variant="contained"
+            sx={{ backgroundColor: "red" }}
+            onClick={() => deleteSugerencia(params.row.id)}
+          >
+            <DeleteIcon />
+          </Button>
+          <Button variant="contained" onClick={() => handleOpenModal(params.row)}>
+            <VisibilityIcon />
+          </Button>
+        </Box>
       ),
     },
   ];
@@ -201,11 +207,7 @@ export const ListaSugerencias: React.FC = () => {
       <Grid size={1}>
         <ButtonGroup>
           {download_xls({ nurseries: sugerencias, columns })}
-          {download_pdf({
-            nurseries: sugerencias,
-            columns,
-            title: "Sugerencias",
-          })}
+          {download_pdf({ nurseries: sugerencias, columns, title: "Sugerencias" })}
         </ButtonGroup>
       </Grid>
 
@@ -218,9 +220,7 @@ export const ListaSugerencias: React.FC = () => {
             <DataGrid
               rows={sugerencias}
               columns={columns}
-              initialState={{
-                pagination: { paginationModel: { pageSize: 5 } },
-              }}
+              initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
               pageSizeOptions={[5, 10, 20]}
               getRowId={(row) => row.id}
               disableRowSelectionOnClick
@@ -228,19 +228,22 @@ export const ListaSugerencias: React.FC = () => {
               sx={{
                 backgroundColor: "white",
                 borderRadius: 2,
-                "& .MuiDataGrid-columnHeaders": {
-                  backgroundColor: "#e3f2fd",
-                  fontWeight: "bold",
-                },
-                "& .MuiDataGrid-cell": {
-                  whiteSpace: "normal",
-                  lineHeight: "1.4 !important",
-                },
+                "& .MuiDataGrid-columnHeaders": { backgroundColor: "#e3f2fd", fontWeight: "bold" },
+                "& .MuiDataGrid-cell": { whiteSpace: "normal", lineHeight: "1.4 !important" },
               }}
             />
           </Box>
         )}
       </Grid>
+
+      {/* 🔹 Modal */}
+      {selectedSugerencia && (
+        <ModalDetalleSugerencias
+          open={openModal}
+          onClose={() => setOpenModal(false)}
+          sugerencia={selectedSugerencia}
+        />
+      )}
     </Grid>
   );
 };

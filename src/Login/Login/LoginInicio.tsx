@@ -169,9 +169,6 @@ export const Login = () => {
           </Typography>
         </Box>
 
-        {/* Botón de test temporal */}
-        <Button onClick={autenticarUsuario}>Test Auth API</Button>
-
         {/* 🟠 Formulario */}
         <form onSubmit={handleSubmit}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>

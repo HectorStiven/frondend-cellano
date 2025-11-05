@@ -1,15 +1,7 @@
 import React, { useState, useRef } from "react";
-import {
-  Box,
-  Button,
-  Grid,
-  TextField,
-  Typography,
-  Modal,
-} from "@mui/material";
+import { Box, Button, Grid, TextField, Typography, Modal } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import EmailIcon from "@mui/icons-material/Email";
-import PersonIcon from "@mui/icons-material/Person";
 import BadgeIcon from "@mui/icons-material/Badge";
 import UploadIcon from "@mui/icons-material/Upload";
 import Webcam from "react-webcam";
@@ -99,9 +91,46 @@ export const CheckEstudiante: React.FC = () => {
     setForm({ ...form, [campo]: valor });
   };
 
-  const handleBuscar = () => {
-    control_error("Ejemplo: búsqueda local desactivada para prueba.");
-  };
+const handleBuscar = async () => {
+  if (!form.identificacion && !form.correo) {
+    control_error("Debe ingresar identificación o correo.");
+    return;
+  }
+
+  try {
+    setEnviando(true);
+
+    // Petición a la API enviando ambos campos
+    const response = await api.post<ReconocimientoResponse>(
+      "/almuerzo_check/webcam/manual/",
+      {
+        identificacion: form.identificacion,
+        correo: form.correo,
+      }
+    );
+
+    if (response.data.success) {
+      const info = response.data.data;
+
+      setEstudiante({
+        ...info,
+        fotoId:
+          info.fotoId ||
+          "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
+      });
+
+      control_success(response.data.detail || "Estudiante encontrado ✅");
+    } else {
+      control_error(response.data.detail || "No se encontró estudiante 😢");
+    }
+  } catch (error: any) {
+    control_error(
+      error?.response?.data?.detail || "Error al buscar estudiante."
+    );
+  } finally {
+    setEnviando(false);
+  }
+};
 
   const handleCapture = () => {
     if (webcamRef.current) {
@@ -143,7 +172,8 @@ export const CheckEstudiante: React.FC = () => {
       const formData = new FormData();
       formData.append("fotoId", blob, "captura.jpg");
 
-      const response = await api.post<ReconocimientoResponse>("/almuerzo_check/webcam/service/",
+      const response = await api.post<ReconocimientoResponse>(
+        "/almuerzo_check/webcam/service/",
         formData
       );
 
@@ -176,6 +206,19 @@ export const CheckEstudiante: React.FC = () => {
     setEstudiante({ ...estudiante, id: 0 }); // borra la info para que desaparezca
   };
 
+  const textFieldStyle = {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "20px",
+      backgroundColor: "#fff",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    },
+  };
+
+  const labelStyle = {
+    fontSize: "1.1rem",
+    letterSpacing: 0.5,
+  };
+
   return (
     <Grid
       container
@@ -193,36 +236,29 @@ export const CheckEstudiante: React.FC = () => {
       </Grid>
 
       {/* Inputs */}
-      <Grid size={{ xs: 12, md: 4 }}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <TextField
           fullWidth
           label="Correo"
+          variant="outlined"
           value={form.correo}
           onChange={(e) => handleInputChange("correo", e.target.value)}
           InputProps={{ startAdornment: <EmailIcon sx={{ mr: 1 }} /> }}
-          size="small"
+          sx={textFieldStyle}
+          InputLabelProps={{ sx: labelStyle }}
         />
       </Grid>
 
-      <Grid size={{ xs: 12, md: 4 }}>
-        <TextField
-          fullWidth
-          label="Primer Nombre"
-          value={form.primer_nombre}
-          onChange={(e) => handleInputChange("primer_nombre", e.target.value)}
-          InputProps={{ startAdornment: <PersonIcon sx={{ mr: 1 }} /> }}
-          size="small"
-        />
-      </Grid>
 
-      <Grid size={{ xs: 12, md: 4 }}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <TextField
           fullWidth
           label="Identificación"
           value={form.identificacion}
           onChange={(e) => handleInputChange("identificacion", e.target.value)}
           InputProps={{ startAdornment: <BadgeIcon sx={{ mr: 1 }} /> }}
-          size="small"
+       sx={textFieldStyle}
+          InputLabelProps={{ sx: labelStyle }}
         />
       </Grid>
 

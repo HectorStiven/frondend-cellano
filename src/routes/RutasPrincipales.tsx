@@ -10,11 +10,11 @@ import { Sugerencias } from "../Inicio/SugerenciasCalificaciones/Sugerencias";
 import { CreditosPagos } from "../Inicio/CreditosPagos/CreditosPagos";
 import { Consumos } from "../Inicio/Consumos/Consumos";
 import { Bienvenida } from "../Inicio/Bienbenida/Bienbenida";
-import { ListarEstudiantes } from "../Inicio/Estudiantes/ListarEstidantes/ListarEstudiantes";
 import { ListarMenu } from "../Inicio/Menu/ListarMenu/ListarMenu";
 import { CheckEstudiante } from "../Inicio/Check/Check";
 import { ListaSugerencias } from "../Inicio/ListaSugerencias/ListaSugerencias";
 import { Reportes } from "../Inicio/Reportes/Reportes";
+import { StepperSimpleStudent } from "../Inicio/Estudiantes/Stepper/Stepper";
 
 export const RutasPrincipales = () => {
   const { modo_dark_numero } = useContext(AlertasContext);
@@ -46,7 +46,7 @@ export const RutasPrincipales = () => {
 
         <Route path="/Consumos" element={<Consumos />} />
 
-        <Route path="/Estudiantes" element={<ListarEstudiantes />} />
+        <Route path="/Estudiantes" element={<StepperSimpleStudent />} />
 
         <Route path="/MenuAdmin" element={<ListarMenu />} />
 

@@ -11,6 +11,8 @@ import {
   InputLabel,
   ButtonGroup,
   Box,
+  Tooltip,
+  Avatar,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import BadgeIcon from "@mui/icons-material/Badge";
@@ -19,7 +21,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
 import GroupIcon from "@mui/icons-material/Group"; // 👈 ícono para "Alumnos"
 import { api } from "../../../api/Axios";
-import { Title } from "../../../Elements/Titulo/Titulo";
 import { download_pdf } from "../../../Elements/DescargarDocumentos/PDF_descargar";
 import { download_xls } from "../../../Elements/DescargarDocumentos/XLS_descargar";
 import { ModalCrearEstudiantes } from "../CrearEstudiantes/CrearEstudiantes";
@@ -85,6 +86,20 @@ export const ListarEstudiantes: React.FC = () => {
   };
 
   const columns: GridColDef[] = [
+    {
+      field: "fotoId",
+      headerName: "Foto",
+
+      renderCell: (params) => (
+        <Tooltip title={params.row.primer_nombre}>
+          <Avatar
+            src={params.value}
+            alt={params.row.primer_nombre}
+            sx={{ width: 50, height: 40 }}
+          />
+        </Tooltip>
+      ),
+    },
     { field: "identificacion", headerName: "Identificación", flex: 1 },
     { field: "primer_nombre", headerName: "Primer Nombre", flex: 1 },
     { field: "primer_apellido", headerName: "Primer Apellido", flex: 1 },
@@ -107,8 +122,7 @@ export const ListarEstudiantes: React.FC = () => {
       flex: 1.8,
       renderCell: (params: any) => (
         <Box sx={{ display: "flex", gap: 1 }}>
-            <ModalEditarEstudiantes id={params.row.id} />
-      
+          <ModalEditarEstudiantes id={params.row.id} />
 
           <Button
             variant="contained"
@@ -176,11 +190,6 @@ export const ListarEstudiantes: React.FC = () => {
         justifyContent="center"
         alignItems="center"
       >
-        {/* Título */}
-        <Grid size={{ xs: 12 }}>
-          <Title title="Lista de Estudiantes" />
-        </Grid>
-
         {/* Campo: Identificación */}
         <Grid size={{ xs: 12, md: 4 }}>
           <TextField
@@ -299,7 +308,6 @@ export const ListarEstudiantes: React.FC = () => {
         >
           <ModalCrearEstudiantes />
         </Grid>
-      
       </Grid>
 
       {/* 👇 Aquí se muestra ListarAcudiente solo si se seleccionó un estudiante */}

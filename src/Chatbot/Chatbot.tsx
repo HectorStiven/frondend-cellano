@@ -96,7 +96,7 @@ export const Chatbot = () => {
       alignItems="center"
     >
       <Grid size={{ xs: 12 }}>
-        <Title title="ChatBot" />
+        <Title title="ChatBot Neil Armstrong School " />
       </Grid>
 
       <Grid size={{ xs: 10}}>

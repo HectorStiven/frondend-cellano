@@ -26,16 +26,14 @@ import { RootState } from "../../store";
 import { useSelector } from "react-redux";
 
 const pages = [
-  // "Menu",
-  "Sugerencias",
-  // "CreditosPagos",
+  "Menu",
   "Consumos",
   "Estudiantes",
-  // "ChatBot",
   "MenuAdmin",
   "Check",
   "ListaSugerencias",
   "Reportes",
+  "Pagos",
 ];
 export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -145,7 +143,7 @@ export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
                 textDecoration: "none",
               }}
             >
-              Cofrem
+           Neil Armstrong School
             </Typography>
             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
               {pages.map((page) => (

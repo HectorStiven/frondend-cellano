@@ -128,13 +128,13 @@ export const Reportes: React.FC = () => {
         {
           field: "fotoId",
           headerName: "Foto",
-          flex: 1,
+          flex: 0.5,
           renderCell: (params) => (
             <Tooltip title={params.row.primer_nombre}>
               <Avatar
                 src={params.value}
                 alt={params.row.primer_nombre}
-                sx={{ width: 50, height: 40 }}
+                sx={{ width: 50, height: 50 }}
               />
             </Tooltip>
           ),
@@ -164,13 +164,13 @@ export const Reportes: React.FC = () => {
         {
           field: "fotoId",
           headerName: "Foto",
-          flex: 1,
+          flex: 0.5,
           renderCell: (params) => (
             <Tooltip title={params.row.primer_nombre}>
               <Avatar
                 src={params.value}
                 alt={params.row.primer_nombre}
-                sx={{ width: 50, height: 40 }}
+                sx={{ width: 50, height: 50 }}
               />
             </Tooltip>
           ),

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import {
   Grid,
@@ -5,29 +7,25 @@ import {
   InputAdornment,
   Button,
   Chip,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
   ButtonGroup,
-  Box,
   Tooltip,
   Avatar,
+  Switch,
+  FormControlLabel,
+  Box,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import BadgeIcon from "@mui/icons-material/Badge";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import SearchIcon from "@mui/icons-material/Search";
-import DeleteIcon from "@mui/icons-material/Delete";
-import GroupIcon from "@mui/icons-material/Group"; // 👈 ícono para "Alumnos"
-import { api } from "../../../api/Axios";
-import { download_pdf } from "../../../Elements/DescargarDocumentos/PDF_descargar";
-import { download_xls } from "../../../Elements/DescargarDocumentos/XLS_descargar";
-import { ModalCrearEstudiantes } from "../CrearEstudiantes/CrearEstudiantes";
-import { ModalEditarEstudiantes } from "../EditarEstudiantes/EditarEstudiantes";
-import { ListarAcudiente } from "../Acudientes/ListarAcudiente/ListarAcudiente";
-import { InformacionEstudiante } from "../InformacionEstudiante/InformacionEstudiante";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney"; // puedes cambiar el icono
+import Swal from "sweetalert2";
+import { api } from "../../api/Axios";
+import { download_pdf } from "../../Elements/DescargarDocumentos/PDF_descargar";
+import { download_xls } from "../../Elements/DescargarDocumentos/XLS_descargar";
+import { CreditCard, HourglassEmpty } from "@mui/icons-material";
+import { CheckCircle, Block } from "@mui/icons-material";
+import { Title } from "../../Elements/Titulo/Titulo";
+import { HistorialPagos } from "./HistorialPagos/HistorialPagos";
 
 interface Estudiante {
   id: number;
@@ -38,7 +36,7 @@ interface Estudiante {
   grupo: string;
   jornada: string;
   estado: boolean;
-  creditos: number;
+  pago_confirmado?: boolean;
 }
 
 const initialData = {
@@ -47,12 +45,9 @@ const initialData = {
   grado: "",
 };
 
-export const ListarEstudiantes: React.FC = () => {
+export const ControlPagos: React.FC = () => {
   const [formData, setFormData] = useState(initialData);
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(
-    null
-  ); // 👈 id del estudiante seleccionado
 
   const handleInputChange = (
     field: keyof typeof initialData,
@@ -66,15 +61,60 @@ export const ListarEstudiantes: React.FC = () => {
       const res = await api.get<{ data: Estudiante[] }>(
         "/almuerzo_check/usuarios/listar_estudiantes/"
       );
-      setEstudiantes(res.data.data);
+      const dataConPago = res.data.data.map((e) => ({
+        ...e,
+        pago_confirmado: false,
+      }));
+      setEstudiantes(dataConPago);
     } catch (error: any) {
-      console.error(error.response.data.detail);
+      console.error(
+        error.response?.data?.detail || "Error al obtener los estudiantes"
+      );
     }
   };
 
-  const deleteEstudiante = async (id: number) => {
-    console.log("Eliminar estudiante con id:", id);
+
+
+  
+  const handleEnviarSolicitud = async (id: number) => {
+    try {
+      const fechaActual = new Date();
+      const mes = fechaActual.getMonth() + 1;
+      const anio = fechaActual.getFullYear();
+
+      const res = await api.post("/almuerzo_check/pagos/crear/", {
+        estudiante: id,
+        mes,
+        anio,
+        valor_mensualidad: 25000,
+      });
+
+      console.log("Pago creado correctamente:", res.data);
+
+      Swal.fire({
+        title: "Pago confirmado",
+        text: `El pago se ha registrado correctamente.`,
+        icon: "success",
+        timer: 1800,
+        showConfirmButton: false,
+      });
+    } catch (err: any) {
+      console.error(
+        "Error al crear el pago:",
+        err.response?.data || err.message
+      );
+
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo registrar el pago, intente de nuevo.",
+        icon: "error",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    }
   };
+
+
 
   useEffect(() => {
     fetchEstudiantes();
@@ -82,22 +122,57 @@ export const ListarEstudiantes: React.FC = () => {
 
   const handleSearch = () => fetchEstudiantes();
 
-  // 🔹 Nueva función: seleccionar estudiante para mostrar acudientes
-  const handleShowAcudientes = (id: number) => {
-    setSelectedStudentId(id);
+  const handleTogglePago = (id: number, nuevoEstado: boolean) => {
+    const estudiante = estudiantes.find((e) => e.id === id);
+    if (!estudiante) return;
+
+    Swal.fire({
+      title: `${nuevoEstado ? "¿Confirmar" : "¿Anular"} pago de ${
+        estudiante.primer_nombre
+      } ${estudiante.primer_apellido}?`,
+      text: nuevoEstado
+        ? "El pago quedará registrado como confirmado."
+        : "El pago volverá a estado pendiente.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sí, continuar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#1976d2",
+      cancelButtonColor: "#d33",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const actualizados = estudiantes.map((e) =>
+          e.id === id ? { ...e, pago_confirmado: nuevoEstado } : e
+        );
+        setEstudiantes(actualizados);
+
+        // 🔹 Aquí agregamos el console.log
+        if (nuevoEstado) {
+          handleEnviarSolicitud(estudiante.id);
+          console.log(
+            `✅ Pago confirmado para: ${estudiante.id} ${estudiante.primer_apellido}`
+          );
+        } else {
+          console.log(
+            `❌ Pago anulado para: ${estudiante.primer_nombre} ${estudiante.primer_apellido}`
+          );
+        }
+      }
+    });
   };
 
+  // Ejemplo de columnas
   const columns: GridColDef[] = [
     {
       field: "fotoId",
       headerName: "Foto",
-      flex: 0.4,
-
+      width: 80,
       renderCell: (params) => (
         <Tooltip title={params.row.primer_nombre}>
           <Avatar
             src={params.value}
             alt={params.row.primer_nombre}
+            sx={{ width: 45, height: 45 }}
           />
         </Tooltip>
       ),
@@ -105,61 +180,77 @@ export const ListarEstudiantes: React.FC = () => {
     { field: "identificacion", headerName: "Identificación", flex: 1 },
     { field: "primer_nombre", headerName: "Primer Nombre", flex: 1 },
     { field: "primer_apellido", headerName: "Primer Apellido", flex: 1 },
-    { field: "grado", headerName: "Grado", flex: 0.6 },
-    {
-      field: "creditos",
-      headerName: "Créditos",
-      flex: 0.6,
-      renderCell: (params) => (
-        <Chip
-          icon={<AttachMoneyIcon />}
-          label={params.value}
-          color={params.value > 0 ? "success" : "default"}
-          variant="outlined"
-        />
-      ),
-    },
     {
       field: "estado",
       headerName: "Estado",
-      flex: 0.6,
-      renderCell: (params: any) => (
+      flex: 0.7,
+      renderCell: (params) => (
         <Chip
+          icon={params.value ? <CheckCircle /> : <Block />}
           label={params.value ? "Activo" : "Inactivo"}
           color={params.value ? "success" : "error"}
+          variant="outlined"
+          sx={{ fontWeight: "bold" }}
         />
       ),
     },
-    {
-      field: "acciones",
-      headerName: "Acciones",
-      flex: 1.8,
-      renderCell: (params: any) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <ModalEditarEstudiantes id={params.row.id} />
+    { field: "grado", headerName: "Grado", flex: 0.7 },
+  {
+  field: "acciones",
+  headerName: "Acciones",
+  flex: 1.2,
+  renderCell: (params) => {
+    const pagado = params.row.pago_confirmado;
+    const activo = params.row.estado; // ✅ estudiante activo
 
-          <Button
-            variant="contained"
-            sx={{ backgroundColor: "red" }}
-            onClick={() => deleteEstudiante(params.row.id)}
-          >
-            <DeleteIcon />
-          </Button>
+    // Si está activo, no mostrar nada
+    if (activo) return null;
 
-          {/* Botón para ver acudientes */}
-          <Button
-            variant="contained"
-            sx={{ backgroundColor: "orange" }}
-            onClick={() => handleShowAcudientes(params.row.id)}
-          >
-            <GroupIcon />
-          </Button>
+    return (
+      <Box display="flex" alignItems="center" gap={1}>
+        {pagado ? (
+          <Tooltip title="Pago confirmado">
+            <CreditCard color="success" />
+          </Tooltip>
+        ) : (
+          <Tooltip title="Pago pendiente">
+            <HourglassEmpty color="error" />
+          </Tooltip>
+        )}
 
-          {/* Mantienes tu botón existente */}
-          <InformacionEstudiante id={params.row.id} />
-        </Box>
-      ),
-    },
+        <FormControlLabel
+          control={
+            <Switch
+              checked={pagado}
+              onChange={(e) =>
+                handleTogglePago(params.row.id, e.target.checked)
+              }
+              sx={{
+                "& .MuiSwitch-switchBase.Mui-checked": {
+                  color: "white",
+                },
+                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                  backgroundColor: "green",
+                },
+                "& .MuiSwitch-switchBase:not(.Mui-checked) + .MuiSwitch-track": {
+                  backgroundColor: "red",
+                },
+              }}
+            />
+          }
+          label={
+            <Chip
+              label={pagado ? "Pagado" : "Pendiente"}
+              color={pagado ? "success" : "error"}
+              size="small"
+            />
+          }
+        />
+      </Box>
+    );
+  },
+}
+
   ];
 
   const textFieldStyle = {
@@ -174,20 +265,6 @@ export const ListarEstudiantes: React.FC = () => {
     fontSize: "1.1rem",
     letterSpacing: 0.5,
   };
-
-  const grados = [
-    "Primero",
-    "Segundo",
-    "Tercero",
-    "Cuarto",
-    "Quinto",
-    "Sexto",
-    "Séptimo",
-    "Octavo",
-    "Noveno",
-    "Décimo",
-    "Once",
-  ];
 
   return (
     <>
@@ -204,7 +281,11 @@ export const ListarEstudiantes: React.FC = () => {
         justifyContent="center"
         alignItems="center"
       >
-        {/* Campo: Identificación */}
+        <Grid size={{ xs: 12 }}>
+          <Title title="Control dePagos" />
+        </Grid>
+
+        {/* Campos de búsqueda */}
         <Grid size={{ xs: 12, md: 4 }}>
           <TextField
             fullWidth
@@ -226,7 +307,6 @@ export const ListarEstudiantes: React.FC = () => {
           />
         </Grid>
 
-        {/* Campo: Primer Nombre */}
         <Grid size={{ xs: 12, md: 4 }}>
           <TextField
             fullWidth
@@ -245,26 +325,6 @@ export const ListarEstudiantes: React.FC = () => {
             InputLabelProps={{ sx: labelStyle }}
           />
         </Grid>
-
-        {/* Campo: Grado */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl   fullWidth>
-            <InputLabel sx={labelStyle}>Grado</InputLabel>
-            <Select
-              label="Grado"
-              value={formData.grado}
-              onChange={(e) => handleInputChange("grado", e.target.value)}
-              sx={{ ...textFieldStyle, borderRadius: "20px" }}
-            >
-              {grados.map((g, index) => (
-                <MenuItem key={index} value={g}>
-                  {g}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-
         {/* Botón Buscar */}
         <Grid size={{ xs: 12, md: 4 }}>
           <Button
@@ -314,18 +374,9 @@ export const ListarEstudiantes: React.FC = () => {
             }}
           />
         </Grid>
-
-        {/* Modales */}
-        <Grid
-          size={{ xs: 6 }}
-          sx={{ display: "flex", justifyContent: "center" }}
-        >
-          <ModalCrearEstudiantes />
-        </Grid>
       </Grid>
 
-      {/* 👇 Aquí se muestra ListarAcudiente solo si se seleccionó un estudiante */}
-      {selectedStudentId && <ListarAcudiente id={selectedStudentId} />}
+      <HistorialPagos />
     </>
   );
 };

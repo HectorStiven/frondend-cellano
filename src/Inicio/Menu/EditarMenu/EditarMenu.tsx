@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Button, Grid, Dialog, DialogActions, DialogContent, TextField } from "@mui/material";
+import React, { useState, useRef } from "react";
+import { Button, Grid, Dialog, DialogActions, DialogContent, TextField, Avatar, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -7,6 +7,7 @@ import RestaurantIcon from "@mui/icons-material/Restaurant";
 import FastfoodIcon from "@mui/icons-material/Fastfood";
 import LocalDrinkIcon from "@mui/icons-material/LocalDrink";
 import CakeIcon from "@mui/icons-material/Cake";
+import Webcam from "react-webcam";
 import { Title } from "../../../Elements/Titulo/Titulo";
 import { control_success } from "../../../Elements/alertas/alertaSucces";
 import { control_error } from "../../../Elements/alertas/alertaError";
@@ -20,12 +21,14 @@ interface MenuForm {
   bebida: string;
   postre: string;
   calorias_total: number;
+  fotoId?: File | null;
 }
 
 export const ModalEditarMenu: React.FC = () => {
   const [open, setOpen] = useState(false);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+  const webcamRef = useRef<Webcam>(null);
 
-  // Valores iniciales de ejemplo
   const [form, setForm] = useState<MenuForm>({
     fecha: "2025-10-29",
     descripcion: "Menú saludable con opciones ligeras y nutritivas.",
@@ -34,6 +37,7 @@ export const ModalEditarMenu: React.FC = () => {
     bebida: "Agua de limón",
     postre: "Yogur con frutas",
     calorias_total: 650,
+    fotoId: null,
   });
 
   const handleInputChange = (field: keyof MenuForm, value: any) => {
@@ -43,11 +47,48 @@ export const ModalEditarMenu: React.FC = () => {
   const handleClickOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  // Captura foto desde la webcam
+  const capturePhoto = () => {
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (imageSrc) {
+        fetch(imageSrc)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], "foto_menu.jpg", { type: "image/jpeg" });
+            setForm({ ...form, fotoId: file });
+            setFotoPreview(URL.createObjectURL(file));
+          });
+      }
+    }
+  };
+
+  // Subir foto desde archivo
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setForm({ ...form, fotoId: file });
+      setFotoPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSave = async () => {
     try {
-      const res = await api.put("/menu/editar/1/", form); // Reemplaza "1" con el ID real si lo tienes
+      const formData = new FormData();
+      formData.append("fecha", form.fecha);
+      formData.append("descripcion", form.descripcion);
+      formData.append("plato_principal", form.plato_principal);
+      formData.append("acompanamiento", form.acompanamiento);
+      formData.append("bebida", form.bebida);
+      formData.append("postre", form.postre);
+      formData.append("calorias_total", String(form.calorias_total));
+      if (form.fotoId) formData.append("fotoId", form.fotoId);
+
+      await api.put("/menu/editar/1/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       control_success("Menú actualizado correctamente");
-      console.log(res.data);
       handleClose();
     } catch (error) {
       control_error("Error al actualizar menú");
@@ -64,7 +105,9 @@ export const ModalEditarMenu: React.FC = () => {
       bebida: "Agua de limón",
       postre: "Yogur con frutas",
       calorias_total: 650,
+      fotoId: null,
     });
+    setFotoPreview(null);
   };
 
   const textFieldStyle = { borderRadius: '20px', height: 60, fontSize: '1.2rem' };
@@ -102,10 +145,29 @@ export const ModalEditarMenu: React.FC = () => {
       >
         <DialogContent>
           <Grid container spacing={2}>
+
+            {/* Título */}
             <Grid size={{ xs: 12 }}>
               <Title title="Editar Menú" />
             </Grid>
 
+            {/* FOTO */}
+            <Grid size={{ xs: 12 }} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+              {fotoPreview ? (
+                <Avatar src={fotoPreview} alt="Foto menú" sx={{ width: 150, height: 150 }} />
+              ) : (
+                <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" width={150} height={150} />
+              )}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button variant="contained" onClick={capturePhoto}>Tomar Foto</Button>
+                <Button variant="contained" component="label">
+                  Subir Foto
+                  <input type="file" hidden accept="image/*" onChange={handleFileUpload} />
+                </Button>
+              </Box>
+            </Grid>
+
+            {/* FORMULARIO */}
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
@@ -193,6 +255,7 @@ export const ModalEditarMenu: React.FC = () => {
                 InputLabelProps={{ sx: labelStyle }}
               />
             </Grid>
+
           </Grid>
         </DialogContent>
 

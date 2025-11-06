@@ -15,6 +15,7 @@ import { CheckEstudiante } from "../Inicio/Check/Check";
 import { ListaSugerencias } from "../Inicio/ListaSugerencias/ListaSugerencias";
 import { Reportes } from "../Inicio/Reportes/Reportes";
 import { StepperSimpleStudent } from "../Inicio/Estudiantes/Stepper/Stepper";
+import { ControlPagos } from "../Inicio/ControlPagos/ControlPagos";
 
 export const RutasPrincipales = () => {
   const { modo_dark_numero } = useContext(AlertasContext);
@@ -42,7 +43,7 @@ export const RutasPrincipales = () => {
 
         <Route path="/Sugerencias" element={<Sugerencias />} />
 
-        <Route path="/CreditosPagos" element={<CreditosPagos />} />
+        <Route path="/Credito" element={<CreditosPagos />} />
 
         <Route path="/Consumos" element={<Consumos />} />
 
@@ -56,6 +57,9 @@ export const RutasPrincipales = () => {
 
         <Route path="/Reportes" element={<Reportes />} />
 
+        <Route path="/Pagos" element={<ControlPagos />} />
+
+        
         <Route path="*" element={<Page404 />} />
       </Routes>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Grid, Button, TextField } from "@mui/material";
+import { Grid, Button, TextField, Avatar, Tooltip } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -9,6 +9,8 @@ import { api } from "../../../api/Axios";
 import { ModalCrearMenu } from "../CrearMenu/CrearMenu";
 import { ModalEditarMenu } from "../EditarMenu/EditarMenu";
 import { ListarReseñas } from "../ListarReseñas/ListarReseñas";
+import { control_error } from "../../../Elements/alertas/alertaError";
+import { control_success } from "../../../Elements/alertas/alertaSucces";
 
 interface Menu {
   id: number;
@@ -19,6 +21,7 @@ interface Menu {
   bebida: string;
   postre: string;
   calorias_total: number;
+  fotoId: string;
 }
 
 export const ListarMenu: React.FC = () => {
@@ -43,11 +46,39 @@ export const ListarMenu: React.FC = () => {
     console.log("Editar menú:", menu);
   };
 
-  const handleDelete = (menu: Menu) => {
-    console.log("Eliminar menú:", menu);
+  const handleDelete = async (menu: Menu) => {
+    try {
+      await api.delete(`almuerzo_check/menu/eliminar/${menu.id}/`);
+
+      // Mensaje de éxito
+      control_success(`Menú con ID ${menu.id} eliminado correctamente`);
+      console.log("Menú eliminado:", menu.id);
+    fetchMenus();
+      // Aquí puedes refrescar la lista de menús si es necesario
+    } catch (error: any) {
+      // Intentamos extraer el mensaje del backend
+      const mensajeError =
+        error.response?.data?.detail ||
+        error.response?.data?.error ||
+        `Error al eliminar el menú con ID ${menu.id}`;
+
+      control_error(mensajeError);
+      console.error(error);
+    }
   };
 
   const columns: GridColDef[] = [
+    {
+      field: "fotoId",
+      headerName: "Foto",
+      flex: 0.4,
+
+      renderCell: (params) => (
+        <Tooltip title={params.row.primer_nombre}>
+          <Avatar src={params.value} alt={params.row.primer_nombre} />
+        </Tooltip>
+      ),
+    },
     { field: "descripcion", headerName: "Descripción", flex: 2 },
     { field: "plato_principal", headerName: "Plato Principal", flex: 1.5 },
     { field: "acompanamiento", headerName: "Acompañamiento", flex: 1.5 },
@@ -57,9 +88,9 @@ export const ListarMenu: React.FC = () => {
     {
       field: "acciones",
       headerName: "Acciones",
-      flex: 1,
+      flex: 1.5,
       renderCell: (params: any) => (
-        <div style={{ display: "flex", gap: 5 }}>
+        <>
           <Button
             variant="contained"
             style={{ backgroundColor: "blue" }}
@@ -74,7 +105,7 @@ export const ListarMenu: React.FC = () => {
           >
             <DeleteIcon />
           </Button>
-        </div>
+        </>
       ),
     },
   ];
@@ -107,65 +138,63 @@ export const ListarMenu: React.FC = () => {
         </Grid>
 
         {/* 🔹 Filtros de búsqueda */}
-   
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TextField
-              fullWidth
-              label="Plato Principal"
-              variant="outlined"
-              size="small"
-              value={platoPrincipal}
-              onChange={(e) => setPlatoPrincipal(e.target.value)}
-              sx={{
-                "& .MuiOutlinedInput-root": { borderRadius: "10px" },
-              }}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
-            <TextField
-              fullWidth
-              label="Bebida"
-              variant="outlined"
-              size="small"
-              value={bebida}
-              onChange={(e) => setBebida(e.target.value)}
-              sx={{
-                "& .MuiOutlinedInput-root": { borderRadius: "10px" },
-              }}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
-            <TextField
-              fullWidth
-              label="Postre"
-              variant="outlined"
-              size="small"
-              value={postre}
-              onChange={(e) => setPostre(e.target.value)}
-              sx={{
-                "& .MuiOutlinedInput-root": { borderRadius: "10px" },
-              }}
-            />
-          </Grid>
-          <Grid
-            size={{ xs: 12, md: 2 }}
+
+        <Grid size={{ xs: 12, md: 4 }}>
+          <TextField
+            fullWidth
+            label="Plato Principal"
+            variant="outlined"
+            size="small"
+            value={platoPrincipal}
+            onChange={(e) => setPlatoPrincipal(e.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+            }}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <TextField
+            fullWidth
+            label="Bebida"
+            variant="outlined"
+            size="small"
+            value={bebida}
+            onChange={(e) => setBebida(e.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+            }}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <TextField
+            fullWidth
+            label="Postre"
+            variant="outlined"
+            size="small"
+            value={postre}
+            onChange={(e) => setPostre(e.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+            }}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 2 }}>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<SearchIcon />}
+            onClick={handleBuscar}
+            sx={{
+              height: "40px",
+              borderRadius: "10px",
+              textTransform: "none",
+              fontWeight: "bold",
+            }}
           >
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<SearchIcon />}
-              onClick={handleBuscar}
-              sx={{
-                height: "40px",
-                borderRadius: "10px",
-                textTransform: "none",
-                fontWeight: "bold",
-              }}
-            >
-              Buscar
-            </Button>
-          </Grid>
-     
+            Buscar
+          </Button>
+        </Grid>
+
         {/* 🔹 Tabla de Menús */}
         <Grid
           container

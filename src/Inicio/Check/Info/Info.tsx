@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Grid,
   Card,
@@ -13,7 +13,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import { api } from "../../../api/Axios";
 import { control_error } from "../../../Elements/alertas/alertaError";
 import { control_success } from "../../../Elements/alertas/alertaSucces";
-import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 
 interface Estudiante {
   id: number;
@@ -35,28 +34,55 @@ interface Estudiante {
   estado: boolean;
 }
 
+interface Menu {
+  id: number;
+  fecha: string;
+  descripcion: string;
+  plato_principal: string;
+  acompanamiento: string;
+  bebida: string;
+  postre: string;
+  calorias_total: number;
+  fotoId: string;
+}
+
 interface InfoProps {
-  estudiante: Estudiante;
+  estudiante: Estudiante | null;
   onClose: () => void;
 }
 
 export const Info: React.FC<InfoProps> = ({ estudiante, onClose }) => {
-  const [menuSeleccionado, setMenuSeleccionado] = useState("");
+  const [menuSeleccionado, setMenuSeleccionado] = useState<number | "">("");
+  const [menus, setMenus] = useState<Menu[]>([]);
+
+  // 🔹 Hooks siempre deben ir al inicio
+  useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        const res = await api.get<{ data: Menu[] }>(
+          "/almuerzo_check/menu/listar/"
+        );
+        setMenus(res.data.data);
+      } catch (error) {
+        console.error("Error al obtener menús:", error);
+        control_error("No se pudieron cargar los menús");
+      }
+    };
+    fetchMenus();
+  }, []);
+
   if (!estudiante || estudiante.id === 0) return null;
 
   const creditos = Number(estudiante.creditos) || 0;
   const estaActivo = creditos > 0;
 
-  // ✅ Estado del menú seleccionado
-
   const obtenerFechaHoraActual = () => {
     const ahora = new Date();
-    const fecha = ahora.toISOString().split("T")[0]; // YYYY-MM-DD
-    const hora = ahora.toTimeString().split(" ")[0]; // HH:MM:SS
+    const fecha = ahora.toLocaleDateString("sv-SE");
+    const hora = ahora.toLocaleTimeString("en-GB");
     return { fecha, hora };
   };
 
-  // ✅ Función del botón "Confirmar"
   const handleConfirmar = async () => {
     if (!menuSeleccionado) {
       control_error("Por favor selecciona un menú antes de confirmar.");
@@ -67,7 +93,7 @@ export const Info: React.FC<InfoProps> = ({ estudiante, onClose }) => {
       const { fecha, hora } = obtenerFechaHoraActual();
       const body = {
         estudiante: estudiante.id,
-        menu: menuSeleccionado, // 👈 se envía el valor seleccionado
+        menu: menuSeleccionado,
         fecha,
         hora,
       };
@@ -81,30 +107,18 @@ export const Info: React.FC<InfoProps> = ({ estudiante, onClose }) => {
     }
   };
 
-  // Lista de menús para pruebas
-  const menus = [
-    { id: 1, nombre: "Arroz con pollo" },
-    { id: 2, nombre: "Lentejas con carne" },
-    { id: 3, nombre: "Pasta boloñesa" },
-    { id: 4, nombre: "Sopa de verduras" },
-    { id: 5, nombre: "Pollo al horno" },
-  ];
-
-  console.log("Renderizando Info para el estudiante:", estudiante.creditos);
-
   return (
     <Grid size={{ xs: 12 }} sx={{ mt: 3 }}>
       <Card
         sx={{
           p: 2,
-          pr: 8, // 🔹 le damos más espacio al lado derecho (antes p:2 en todos los lados)
+          pr: 8,
           borderRadius: 3,
           boxShadow: 6,
           backgroundColor: "#fafafa",
           position: "relative",
         }}
       >
-        {/* Botón cerrar */}
         <IconButton
           onClick={onClose}
           sx={{ position: "absolute", top: 10, right: 10, color: "#f44336" }}
@@ -113,7 +127,6 @@ export const Info: React.FC<InfoProps> = ({ estudiante, onClose }) => {
         </IconButton>
 
         <Box sx={{ display: "flex", alignItems: "flex-start" }}>
-          {/* Foto */}
           <Avatar
             src={estudiante.fotoId}
             alt="foto estudiante"
@@ -125,7 +138,6 @@ export const Info: React.FC<InfoProps> = ({ estudiante, onClose }) => {
             }}
           />
 
-          {/* Info estudiante */}
           <Box sx={{ flex: 1, mx: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: "bold" }}>
               {`${estudiante.primer_nombre} ${
@@ -147,7 +159,6 @@ export const Info: React.FC<InfoProps> = ({ estudiante, onClose }) => {
             )}
           </Box>
 
-          {/* Selector de menú */}
           {estaActivo && (
             <Box sx={{ width: 300, mr: 2 }}>
               <TextField
@@ -155,24 +166,24 @@ export const Info: React.FC<InfoProps> = ({ estudiante, onClose }) => {
                 fullWidth
                 label="Seleccionar Menú"
                 value={menuSeleccionado}
+                onChange={(e) => setMenuSeleccionado(Number(e.target.value))}
                 InputProps={{
-                  startAdornment: <RestaurantMenuIcon />,
-                  sx: { borderRadius: "20px", height: 60, fontSize: "1.2rem" },
+                  sx: {
+                    borderRadius: "20px",
+                    height: 60,
+                  },
                 }}
-                onChange={(e) => setMenuSeleccionado(e.target.value)}
               >
                 {menus.map((item) => (
                   <MenuItem key={item.id} value={item.id}>
-                    {item.nombre}
+                    {item.descripcion} - {item.plato_principal}
                   </MenuItem>
                 ))}
               </TextField>
             </Box>
           )}
 
-          {/* Botones de estado */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {/* Estado */}
             <Box
               sx={{
                 px: 3,
@@ -192,31 +203,26 @@ export const Info: React.FC<InfoProps> = ({ estudiante, onClose }) => {
               {estaActivo ? "Activo" : "Inactivo"}
             </Box>
 
-            {/* Confirmar (solo si activo) */}
             {estaActivo && (
-              <>
-                <Box
-                  onClick={handleConfirmar}
-                  sx={{
-                    px: 3,
-                    py: 1.5,
-                    borderRadius: 2,
-                    backgroundColor: "#ff9800",
-                    color: "#fff",
-                    fontWeight: "bold",
-                    fontSize: "1.2rem",
-                    textAlign: "center",
-                    cursor: "pointer",
-                    boxShadow:
-                      "0 4px 10px rgba(255, 152, 0, 0.7), 0 0 10px rgba(255, 152, 0, 0.5)",
-                    "&:hover": {
-                      transform: "translateY(-3px) scale(1.05)",
-                    },
-                  }}
-                >
-                  Confirmar
-                </Box>
-              </>
+              <Box
+                onClick={handleConfirmar}
+                sx={{
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: 2,
+                  backgroundColor: "#ff9800",
+                  color: "#fff",
+                  fontWeight: "bold",
+                  fontSize: "1.2rem",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  boxShadow:
+                    "0 4px 10px rgba(255, 152, 0, 0.7), 0 0 10px rgba(255, 152, 0, 0.5)",
+                  "&:hover": { transform: "translateY(-3px) scale(1.05)" },
+                }}
+              >
+                Confirmar
+              </Box>
             )}
           </Box>
         </Box>

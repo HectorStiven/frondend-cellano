@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import {
   Grid,
   Card,
@@ -6,13 +5,10 @@ import {
   Avatar,
   Typography,
   IconButton,
-  MenuItem,
-  TextField,
+
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { api } from "../../../api/Axios";
-import { control_error } from "../../../Elements/alertas/alertaError";
-import { control_success } from "../../../Elements/alertas/alertaSucces";
+
 
 interface Estudiante {
   id: number;
@@ -34,17 +30,6 @@ interface Estudiante {
   estado: boolean;
 }
 
-interface Menu {
-  id: number;
-  fecha: string;
-  descripcion: string;
-  plato_principal: string;
-  acompanamiento: string;
-  bebida: string;
-  postre: string;
-  calorias_total: number;
-  fotoId: string;
-}
 
 interface InfoProps {
   estudiante: Estudiante | null;
@@ -52,60 +37,16 @@ interface InfoProps {
 }
 
 export const Info: React.FC<InfoProps> = ({ estudiante, onClose }) => {
-  const [menuSeleccionado, setMenuSeleccionado] = useState<number | "">("");
-  const [menus, setMenus] = useState<Menu[]>([]);
 
-  // 🔹 Hooks siempre deben ir al inicio
-  useEffect(() => {
-    const fetchMenus = async () => {
-      try {
-        const res = await api.get<{ data: Menu[] }>(
-          "/almuerzo_check/menu/listar/"
-        );
-        setMenus(res.data.data);
-      } catch (error) {
-        console.error("Error al obtener menús:", error);
-        control_error("No se pudieron cargar los menús");
-      }
-    };
-    fetchMenus();
-  }, []);
+
 
   if (!estudiante || estudiante.id === 0) return null;
 
   const creditos = Number(estudiante.creditos) || 0;
   const estaActivo = creditos > 0;
 
-  const obtenerFechaHoraActual = () => {
-    const ahora = new Date();
-    const fecha = ahora.toLocaleDateString("sv-SE");
-    const hora = ahora.toLocaleTimeString("en-GB");
-    return { fecha, hora };
-  };
 
-  const handleConfirmar = async () => {
-    if (!menuSeleccionado) {
-      control_error("Por favor selecciona un menú antes de confirmar.");
-      return;
-    }
 
-    try {
-      const { fecha, hora } = obtenerFechaHoraActual();
-      const body = {
-        estudiante: estudiante.id,
-        menu: menuSeleccionado,
-        fecha,
-        hora,
-      };
-
-      const res = await api.post("/almuerzo_check/consumos/crear/", body);
-      control_success("Consumo creado correctamente");
-      console.log("✅ Respuesta del servidor:", res.data);
-    } catch (error) {
-      console.error("❌ Error al crear consumo:", error);
-      control_error("Error al crear consumo");
-    }
-  };
 
   return (
     <Grid size={{ xs: 12 }} sx={{ mt: 3 }}>
@@ -159,29 +100,7 @@ export const Info: React.FC<InfoProps> = ({ estudiante, onClose }) => {
             )}
           </Box>
 
-          {estaActivo && (
-            <Box sx={{ width: 300, mr: 2 }}>
-              <TextField
-                select
-                fullWidth
-                label="Seleccionar Menú"
-                value={menuSeleccionado}
-                onChange={(e) => setMenuSeleccionado(Number(e.target.value))}
-                InputProps={{
-                  sx: {
-                    borderRadius: "20px",
-                    height: 60,
-                  },
-                }}
-              >
-                {menus.map((item) => (
-                  <MenuItem key={item.id} value={item.id}>
-                    {item.descripcion} - {item.plato_principal}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Box>
-          )}
+        
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <Box
@@ -203,27 +122,7 @@ export const Info: React.FC<InfoProps> = ({ estudiante, onClose }) => {
               {estaActivo ? "Activo" : "Inactivo"}
             </Box>
 
-            {estaActivo && (
-              <Box
-                onClick={handleConfirmar}
-                sx={{
-                  px: 3,
-                  py: 1.5,
-                  borderRadius: 2,
-                  backgroundColor: "#ff9800",
-                  color: "#fff",
-                  fontWeight: "bold",
-                  fontSize: "1.2rem",
-                  textAlign: "center",
-                  cursor: "pointer",
-                  boxShadow:
-                    "0 4px 10px rgba(255, 152, 0, 0.7), 0 0 10px rgba(255, 152, 0, 0.5)",
-                  "&:hover": { transform: "translateY(-3px) scale(1.05)" },
-                }}
-              >
-                Confirmar
-              </Box>
-            )}
+
           </Box>
         </Box>
       </Card>

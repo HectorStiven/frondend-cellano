@@ -1,64 +1,24 @@
 import React, { useState, useRef } from "react";
-import { Box, Button, Grid, TextField, Typography, Modal } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  TextField,
+  Typography,
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import EmailIcon from "@mui/icons-material/Email";
 import BadgeIcon from "@mui/icons-material/Badge";
-import UploadIcon from "@mui/icons-material/Upload";
 import Webcam from "react-webcam";
 import { control_error } from "../../Elements/alertas/alertaError";
 import { control_success } from "../../Elements/alertas/alertaSucces";
 import { Title } from "../../Elements/Titulo/Titulo";
 import { api } from "../../api/Axios";
 import { Info } from "./Info/Info";
-
-// Interfaz del estudiante
-interface Estudiante {
-  id: number;
-  identificacion: string;
-  tipo_documento: string;
-  primer_nombre: string;
-  segundo_nombre: string;
-  primer_apellido: string;
-  segundo_apellido: string;
-  foto: string | null;
-  genero: string;
-  fecha_nacimiento: string;
-  direccion: string;
-  telefono: string;
-  correo: string;
-  grado: string;
-  grupo: string;
-  jornada: string;
-  año_ingreso: number;
-  estado: boolean;
-  creditos: string;
-  creado_en: string;
-  fotoId?: string;
-}
-
-const estudianteInicial: Estudiante = {
-  id: 0,
-  identificacion: "",
-  tipo_documento: "",
-  primer_nombre: "",
-  segundo_nombre: "",
-  primer_apellido: "",
-  segundo_apellido: "",
-  foto: null,
-  genero: "",
-  fecha_nacimiento: "",
-  direccion: "",
-  telefono: "",
-  correo: "",
-  grado: "",
-  grupo: "",
-  jornada: "",
-  año_ingreso: 0,
-  estado: false,
-  creditos: "",
-  creado_en: "",
-  fotoId: "",
-};
+import { Estudiante, estudianteInicial } from "./CheckInterfaces";
+import { motion } from "framer-motion";
+import { Face6Rounded } from "@mui/icons-material"; // ✅ ícono de rostro disponible
 
 interface ReconocimientoResponse {
   success: boolean;
@@ -79,11 +39,8 @@ export const CheckEstudiante: React.FC = () => {
     año_ingreso: 0,
   });
 
-  const [openCam, setOpenCam] = useState(false);
   const webcamRef = useRef<Webcam>(null);
-  const [captura, setCaptura] = useState<string | null>(
-    "https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif"
-  );
+  const [captura, setCaptura] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [estudiante, setEstudiante] = useState<Estudiante>(estudianteInicial);
 
@@ -91,78 +48,67 @@ export const CheckEstudiante: React.FC = () => {
     setForm({ ...form, [campo]: valor });
   };
 
-const handleBuscar = async () => {
-  if (!form.identificacion && !form.correo) {
-    control_error("Debe ingresar identificación o correo.");
-    return;
-  }
+  const handleBuscar = async () => {
+    if (!form.identificacion && !form.correo) {
+      control_error("Debe ingresar identificación o correo.");
+      return;
+    }
 
-  try {
-    setEnviando(true);
+    try {
+      setEnviando(true);
+      const response = await api.post<ReconocimientoResponse>(
+        "/almuerzo_check/webcam/manual/",
+        {
+          identificacion: form.identificacion,
+          correo: form.correo,
+        }
+      );
 
-    // Petición a la API enviando ambos campos
-    const response = await api.post<ReconocimientoResponse>(
-      "/almuerzo_check/webcam/manual/",
-      {
-        identificacion: form.identificacion,
-        correo: form.correo,
+      if (response.data.success) {
+        const info = response.data.data;
+
+        setEstudiante({
+          ...info,
+          fotoId:
+            info.fotoId ||
+            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
+        });
+
+        control_success(response.data.detail || "Estudiante encontrado ✅");
+      } else {
+        control_error(response.data.detail || "No se encontró estudiante 😢");
       }
-    );
-
-    if (response.data.success) {
-      const info = response.data.data;
-
-      setEstudiante({
-        ...info,
-        fotoId:
-          info.fotoId ||
-          "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
-      });
-
-      control_success(response.data.detail || "Estudiante encontrado ✅");
-    } else {
-      control_error(response.data.detail || "No se encontró estudiante 😢");
-    }
-  } catch (error: any) {
-    control_error(
-      error?.response?.data?.detail || "Error al buscar estudiante."
-    );
-  } finally {
-    setEnviando(false);
-  }
-};
-
-  const handleCapture = () => {
-    if (webcamRef.current) {
-      const imageSrc = webcamRef.current.getScreenshot();
-      setCaptura(imageSrc);
-      control_success("Foto capturada correctamente ✅");
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCaptura(reader.result as string);
-        control_success("Imagen cargada correctamente ✅");
-      };
-      reader.readAsDataURL(file);
+    } catch (error: any) {
+      control_error(
+        error?.response?.data?.detail || "Error al buscar estudiante."
+      );
+    } finally {
+      setEnviando(false);
     }
   };
 
   const handleEnviarFoto = async () => {
-    if (!captura) {
-      control_error("Primero toma o sube una foto.");
+    if (!webcamRef.current) {
+      control_error("Webcam no disponible.");
       return;
     }
 
     try {
       setEnviando(true);
 
-      const byteString = atob(captura.split(",")[1]);
-      const mimeString = captura.split(",")[0].split(":")[1].split(";")[0];
+      // Tomar captura directamente de la webcam
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (!imageSrc) {
+        control_error("No se pudo capturar la imagen.");
+        setEnviando(false);
+        return;
+      }
+
+      setCaptura(imageSrc); // actualizar previsualización
+
+      // Convertir a Blob para enviar
+      const byteString = atob(imageSrc.split(",")[1]);
+      const mimeString = imageSrc.split(",")[0].split(":")[1].split(";")[0];
       const ab = new ArrayBuffer(byteString.length);
       const ia = new Uint8Array(ab);
       for (let i = 0; i < byteString.length; i++)
@@ -187,11 +133,9 @@ const handleBuscar = async () => {
             "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
         });
 
-        console.log("Estudiante reconocido:", info);
         control_success(
           response.data.detail || "Rostro reconocido correctamente ✅"
         );
-        setOpenCam(false);
       } else {
         control_error("No se reconoció ningún rostro 😢");
       }
@@ -231,149 +175,169 @@ const handleBuscar = async () => {
         m: 3,
       }}
     >
+      {/* Título */}
       <Grid size={{ xs: 12 }}>
         <Title title="Check Estudiante" />
       </Grid>
 
-      {/* Inputs */}
-      <Grid size={{ xs: 12, md: 6 }}>
-        <TextField
-          fullWidth
-          label="Correo"
-          variant="outlined"
-          value={form.correo}
-          onChange={(e) => handleInputChange("correo", e.target.value)}
-          InputProps={{ startAdornment: <EmailIcon sx={{ mr: 1 }} /> }}
-          sx={textFieldStyle}
-          InputLabelProps={{ sx: labelStyle }}
-        />
-      </Grid>
-
-
-      <Grid size={{ xs: 12, md: 6 }}>
-        <TextField
-          fullWidth
-          label="Identificación"
-          value={form.identificacion}
-          onChange={(e) => handleInputChange("identificacion", e.target.value)}
-          InputProps={{ startAdornment: <BadgeIcon sx={{ mr: 1 }} /> }}
-       sx={textFieldStyle}
-          InputLabelProps={{ sx: labelStyle }}
-        />
-      </Grid>
-
-      {/* Botones */}
-      <Grid size={{ xs: 12 }} display="flex" justifyContent="center" gap={2}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setOpenCam(true)}
-        >
-          Reconocimiento Facial
-        </Button>
-
-        <Button
-          variant="contained"
-          startIcon={<SearchIcon />}
-          onClick={handleBuscar}
-          color="success"
-        >
-          Buscar Estudiante
-        </Button>
-      </Grid>
-
-      <Info estudiante={estudiante} onClose={handleClose} />
-
-      {/* Modal cámara */}
-      <Modal open={openCam} onClose={() => setOpenCam(false)}>
-        <Box
-          sx={{
-            position: "absolute" as "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            p: 4,
-            borderRadius: 2,
-            textAlign: "center",
-            width: 450,
+      {/* Lado izquierdo: Cámara */}
+      <Grid size={{ xs: 12, md: 5 }}>
+        <Webcam
+          audio={false}
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+          videoConstraints={{ facingMode: "user" }}
+          style={{
+            width: "100%",
+            height: 300,
+            borderRadius: "10px",
           }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Captura Facial
-          </Typography>
+        />
 
-          <Webcam
-            audio={false}
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            videoConstraints={{ facingMode: "user" }}
-            style={{
-              width: 400,
-              height: 300,
-              borderRadius: "10px",
+        {captura && (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              mb: 2,
+              mt: 2,
             }}
-          />
-
-          <Box sx={{ mt: 2 }}>
-            <Button variant="contained" color="primary" onClick={handleCapture}>
-              Tomar Foto
-            </Button>
-
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<UploadIcon />}
-              sx={{ ml: 2 }}
-            >
-              Subir Imagen
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-            </Button>
-          </Box>
-
-          {captura && (
-            <Box
-              sx={{
-                mt: 2,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+          >
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Previsualización:
+            </Typography>
+            <img
+              src={captura}
+              alt="captura facial"
+              style={{
+                width: "150px",
+                height: "auto",
+                borderRadius: "10px",
+                border: "2px solid #ccc",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
               }}
-            >
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Previsualización:
-              </Typography>
-              <img
-                src={captura}
-                alt="captura facial"
-                style={{
-                  width: "150px",
-                  height: "auto",
-                  borderRadius: "10px",
-                  border: "2px solid #ccc",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                }}
-              />
-            </Box>
-          )}
+            />
+          </Box>
+        )}
 
+        <Grid container justifyContent="center" mt={2}>
           <Button
             variant="contained"
             color="success"
-            sx={{ mt: 2 }}
             onClick={handleEnviarFoto}
             disabled={enviando}
+            fullWidth
+            sx={{
+              py: 1.5,
+              fontSize: "1rem",
+              fontWeight: "bold",
+              width: "50%",
+              textTransform: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 1,
+              borderRadius: 3,
+              boxShadow: 3,
+            }}
           >
-            {enviando ? "Enviando..." : "Enviar Foto"}
+            {enviando ? (
+              <>
+                <CircularProgress size={22} color="inherit" />
+                <motion.span
+                  animate={{ opacity: [1, 0.6, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  Escaneando...
+                </motion.span>
+              </>
+            ) : (
+              <>
+                <Face6Rounded sx={{ fontSize: 24 }} />
+                Escanear Rostro
+              </>
+            )}
           </Button>
-        </Box>
-      </Modal>
+        </Grid>
+      </Grid>
+
+      {/* Divisor vertical */}
+      <Grid
+        size={{ xs: 12, md: 1 }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            width: "2px",
+            height: "80%",
+            background: "linear-gradient(to bottom, #0d47a1, #42a5f5, #0d47a1)",
+            borderRadius: "2px",
+          }}
+        />
+      </Grid>
+
+      {/* Lado derecho: Formulario */}
+      <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12 }}>
+          <TextField
+            fullWidth
+            label="Correo"
+            variant="outlined"
+            value={form.correo}
+            onChange={(e) => handleInputChange("correo", e.target.value)}
+            InputProps={{
+              startAdornment: <EmailIcon sx={{ mr: 1, color: "#1976d2" }} />,
+            }}
+            sx={textFieldStyle}
+            InputLabelProps={{ sx: labelStyle }}
+            margin="normal"
+          />
+        </Grid>
+
+        <Grid size={{ xs: 12 }}>
+          <TextField
+            fullWidth
+            label="Identificación"
+            value={form.identificacion}
+            onChange={(e) =>
+              handleInputChange("identificacion", e.target.value)
+            }
+            InputProps={{
+              startAdornment: <BadgeIcon sx={{ mr: 1, color: "#388e3c" }} />,
+            }}
+            sx={textFieldStyle}
+            InputLabelProps={{ sx: labelStyle }}
+            margin="normal"
+          />
+        </Grid>
+
+        <Grid
+          size={{ xs: 4 }}
+          display="flex"
+          justifyContent="center"
+          gap={2}
+          mt={2}
+        >
+          <Button
+            variant="contained"
+            startIcon={<SearchIcon />}
+            onClick={handleBuscar}
+            color="success"
+            sx={{ borderRadius: 5 }}
+          >
+            Buscar Estudiante
+          </Button>
+        </Grid>
+
+        <Grid size={{ xs: 12 }}>
+          <Info estudiante={estudiante} onClose={handleClose} />
+        </Grid>
+      </Grid>
     </Grid>
   );
 };

@@ -51,8 +51,8 @@ interface LoginResponse {
 // 🔹 Componente principal Login
 // ==============================
 export const Login = () => {
-  const [username, setUsername] = useState("djstiven3");
-  const [password, setPassword] = useState("123456");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");

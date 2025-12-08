@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Button,
   Grid,
@@ -30,47 +30,25 @@ import { control_success } from "../../../Elements/alertas/alertaSucces";
 import { control_error } from "../../../Elements/alertas/alertaError";
 import { api } from "../../../api/Axios";
 import Webcam from "react-webcam";
-
-export interface EstudiantesForm {
-  identificacion: string;
-  tipo_documento: string;
-  primer_nombre: string;
-  segundo_nombre?: string;
-  primer_apellido: string;
-  segundo_apellido?: string;
-  genero: string;
-  fecha_nacimiento: string;
-  direccion: string;
-  telefono: string;
-  correo?: string;
-  grado: string;
-  grupo: string;
-  jornada: string;
-  año_ingreso: number;
-  fotoId?: File | null;
-}
+import {
+  EstudiantesForm,
+  Grado,
+  GradosResponse,
+  initialFormState,
+} from "./CrearEstudiantesInterfaces";
 
 export const ModalCrearEstudiantes: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<EstudiantesForm>({
-    identificacion: "",
-    tipo_documento: "",
-    primer_nombre: "",
-    segundo_nombre: "",
-    primer_apellido: "",
-    segundo_apellido: "",
-    genero: "",
-    fecha_nacimiento: "",
-    direccion: "",
-    telefono: "",
-    correo: "",
-    grado: "",
-    grupo: "",
-    jornada: "",
-    año_ingreso: new Date().getFullYear(),
-    fotoId: null,
-  });
-
+  const [form, setForm] = useState<EstudiantesForm>(initialFormState);
+  const [grados, setGrados] = useState<Grado[]>([]);
+  const tiposDocumento = ["CC", "TI", "CE", "RC"];
+  const jornadas = ["Mañana", "Tarde", "Noche"];
+  const textFieldStyle = {
+    borderRadius: "20px",
+    height: 60,
+    fontSize: "1.2rem",
+  };
+  const labelStyle = { fontSize: "1.2rem" };
   const [preview, setPreview] = useState<string | null>(null);
   const [usingCamera, setUsingCamera] = useState(false);
   const webcamRef = useRef<Webcam>(null);
@@ -129,9 +107,13 @@ export const ModalCrearEstudiantes: React.FC = () => {
       // créditos siempre 0 por defecto
       formData.append("creditos", "0");
 
-      const res = await api.post("/almuerzo_check/usuarios/crear_estudiante/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await api.post(
+        "/almuerzo_check/usuarios/crear_estudiante/",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
       control_success("Estudiante creado correctamente");
       console.log(res.data);
@@ -143,47 +125,29 @@ export const ModalCrearEstudiantes: React.FC = () => {
   };
 
   const handleClear = () => {
-    setForm({
-      identificacion: "",
-      tipo_documento: "",
-      primer_nombre: "",
-      segundo_nombre: "",
-      primer_apellido: "",
-      segundo_apellido: "",
-      genero: "",
-      fecha_nacimiento: "",
-      direccion: "",
-      telefono: "",
-      correo: "",
-      grado: "",
-      grupo: "",
-      jornada: "",
-      año_ingreso: new Date().getFullYear(),
-      fotoId: null,
-    });
+    setForm(initialFormState);
     setPreview(null);
     setUsingCamera(false);
   };
 
-  const grados = [
-    "Primero",
-    "Segundo",
-    "Tercero",
-    "Cuarto",
-    "Quinto",
-    "Sexto",
-    "Séptimo",
-    "Octavo",
-    "Noveno",
-    "Décimo",
-    "Once",
-  ];
+  const handleGetGrados = async () => {
+    try {
+      const res = await api.get<GradosResponse>(
+        "/almuerzo_check/grados/listar/"
+      );
+      if (res.data.success) {
+        setGrados(res.data.data);
+      } else {
+        control_error("No se pudieron cargar los grados");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  const tiposDocumento = ["CC", "TI", "CE", "RC"];
-  const jornadas = ["Mañana", "Tarde", "Noche"];
-
-  const textFieldStyle = { borderRadius: "20px", height: 60, fontSize: "1.2rem" };
-  const labelStyle = { fontSize: "1.2rem" };
+  useEffect(() => {
+    handleGetGrados();
+  }, []);
 
   return (
     <>
@@ -297,7 +261,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                     onChange={(e) =>
                       handleInputChange("tipo_documento", e.target.value)
                     }
-                    InputProps={{ startAdornment: <BadgeIcon />, sx: textFieldStyle }}
+                    InputProps={{
+                      startAdornment: <BadgeIcon />,
+                      sx: textFieldStyle,
+                    }}
                     InputLabelProps={{ sx: labelStyle }}
                     required
                   >
@@ -317,7 +284,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                     onChange={(e) =>
                       handleInputChange("identificacion", e.target.value)
                     }
-                    InputProps={{ startAdornment: <BadgeIcon />, sx: textFieldStyle }}
+                    InputProps={{
+                      startAdornment: <BadgeIcon />,
+                      sx: textFieldStyle,
+                    }}
                     InputLabelProps={{ sx: labelStyle }}
                     required
                   />
@@ -331,7 +301,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                     onChange={(e) =>
                       handleInputChange("primer_nombre", e.target.value)
                     }
-                    InputProps={{ startAdornment: <PersonIcon />, sx: textFieldStyle }}
+                    InputProps={{
+                      startAdornment: <PersonIcon />,
+                      sx: textFieldStyle,
+                    }}
                     InputLabelProps={{ sx: labelStyle }}
                     required
                   />
@@ -345,7 +318,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                     onChange={(e) =>
                       handleInputChange("segundo_nombre", e.target.value)
                     }
-                    InputProps={{ startAdornment: <PersonIcon />, sx: textFieldStyle }}
+                    InputProps={{
+                      startAdornment: <PersonIcon />,
+                      sx: textFieldStyle,
+                    }}
                     InputLabelProps={{ sx: labelStyle }}
                   />
                 </Grid>
@@ -358,7 +334,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                     onChange={(e) =>
                       handleInputChange("primer_apellido", e.target.value)
                     }
-                    InputProps={{ startAdornment: <PersonIcon />, sx: textFieldStyle }}
+                    InputProps={{
+                      startAdornment: <PersonIcon />,
+                      sx: textFieldStyle,
+                    }}
                     InputLabelProps={{ sx: labelStyle }}
                     required
                   />
@@ -372,7 +351,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                     onChange={(e) =>
                       handleInputChange("segundo_apellido", e.target.value)
                     }
-                    InputProps={{ startAdornment: <PersonIcon />, sx: textFieldStyle }}
+                    InputProps={{
+                      startAdornment: <PersonIcon />,
+                      sx: textFieldStyle,
+                    }}
                     InputLabelProps={{ sx: labelStyle }}
                   />
                 </Grid>
@@ -386,7 +368,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                 label="Género"
                 value={form.genero}
                 onChange={(e) => handleInputChange("genero", e.target.value)}
-                InputProps={{ startAdornment: <PersonIcon />, sx: textFieldStyle }}
+                InputProps={{
+                  startAdornment: <PersonIcon />,
+                  sx: textFieldStyle,
+                }}
                 InputLabelProps={{ sx: labelStyle }}
                 placeholder="M/F"
                 required
@@ -403,7 +388,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                   handleInputChange("fecha_nacimiento", e.target.value)
                 }
                 InputLabelProps={{ shrink: true, sx: labelStyle }}
-                InputProps={{ startAdornment: <EventIcon />, sx: textFieldStyle }}
+                InputProps={{
+                  startAdornment: <EventIcon />,
+                  sx: textFieldStyle,
+                }}
                 required
               />
             </Grid>
@@ -414,7 +402,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                 label="Grupo"
                 value={form.grupo}
                 onChange={(e) => handleInputChange("grupo", e.target.value)}
-                InputProps={{ startAdornment: <GroupIcon />, sx: textFieldStyle }}
+                InputProps={{
+                  startAdornment: <GroupIcon />,
+                  sx: textFieldStyle,
+                }}
                 InputLabelProps={{ sx: labelStyle }}
                 required
               />
@@ -426,7 +417,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                 label="Dirección"
                 value={form.direccion}
                 onChange={(e) => handleInputChange("direccion", e.target.value)}
-                InputProps={{ startAdornment: <HomeIcon />, sx: textFieldStyle }}
+                InputProps={{
+                  startAdornment: <HomeIcon />,
+                  sx: textFieldStyle,
+                }}
                 InputLabelProps={{ sx: labelStyle }}
                 required
               />
@@ -438,7 +432,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                 label="Teléfono"
                 value={form.telefono}
                 onChange={(e) => handleInputChange("telefono", e.target.value)}
-                InputProps={{ startAdornment: <PhoneIcon />, sx: textFieldStyle }}
+                InputProps={{
+                  startAdornment: <PhoneIcon />,
+                  sx: textFieldStyle,
+                }}
                 InputLabelProps={{ sx: labelStyle }}
                 required
               />
@@ -451,7 +448,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                 label="Correo Electrónico"
                 value={form.correo}
                 onChange={(e) => handleInputChange("correo", e.target.value)}
-                InputProps={{ startAdornment: <EmailIcon />, sx: textFieldStyle }}
+                InputProps={{
+                  startAdornment: <EmailIcon />,
+                  sx: textFieldStyle,
+                }}
                 InputLabelProps={{ sx: labelStyle }}
               />
             </Grid>
@@ -463,13 +463,16 @@ export const ModalCrearEstudiantes: React.FC = () => {
                 label="Grado"
                 value={form.grado}
                 onChange={(e) => handleInputChange("grado", e.target.value)}
-                InputProps={{ startAdornment: <SchoolIcon />, sx: textFieldStyle }}
+                InputProps={{
+                  startAdornment: <SchoolIcon />,
+                  sx: textFieldStyle,
+                }}
                 InputLabelProps={{ sx: labelStyle }}
                 required
               >
                 {grados.map((g) => (
-                  <MenuItem key={g} value={g}>
-                    {g}
+                  <MenuItem key={g.id} value={g.id}>
+                    {g.nombre_grado}- {g.salon}
                   </MenuItem>
                 ))}
               </TextField>
@@ -482,7 +485,10 @@ export const ModalCrearEstudiantes: React.FC = () => {
                 label="Jornada"
                 value={form.jornada}
                 onChange={(e) => handleInputChange("jornada", e.target.value)}
-                InputProps={{ startAdornment: <AccessTimeIcon />, sx: textFieldStyle }}
+                InputProps={{
+                  startAdornment: <AccessTimeIcon />,
+                  sx: textFieldStyle,
+                }}
                 InputLabelProps={{ sx: labelStyle }}
                 required
               >
@@ -525,7 +531,7 @@ export const ModalCrearEstudiantes: React.FC = () => {
           </Button>
           <Button
             variant="contained"
-            color="primary"
+                   color="success"
             startIcon={<SaveIcon />}
             onClick={handleSave}
           >

@@ -29,6 +29,11 @@ import Webcam from "react-webcam";
 import { Title } from "../../../Elements/Titulo/Titulo";
 import { api } from "../../../api/Axios";
 import EditIcon from "@mui/icons-material/Edit";
+import {
+  Grado,
+  GradosResponse,
+} from "../CrearEstudiantes/CrearEstudiantesInterfaces";
+import { control_error } from "../../../Elements/alertas/alertaError";
 
 interface EstudiantesForm {
   identificacion: string;
@@ -42,7 +47,7 @@ interface EstudiantesForm {
   direccion: string;
   telefono: string;
   correo?: string;
-  grado: string;
+  grado: number;
   grupo: string;
   jornada: string;
   año_ingreso: number;
@@ -63,13 +68,13 @@ export const ModalEditarEstudiantes: React.FC<{ id: number }> = ({ id }) => {
     direccion: "",
     telefono: "",
     correo: "",
-    grado: "",
+    grado: 1,
     grupo: "",
     jornada: "",
     año_ingreso: new Date().getFullYear(),
     fotoId: null,
   });
-
+console.log("form  ", form);
   const [preview, setPreview] = useState<string | null>(null);
   const [usingCamera, setUsingCamera] = useState(false);
   const webcamRef = useRef<Webcam>(form.fotoId ? null : null);
@@ -140,40 +145,37 @@ export const ModalEditarEstudiantes: React.FC<{ id: number }> = ({ id }) => {
     setUsingCamera(false);
   };
 
-  const handleSave = async () => {
-    try {
-      if (!id) return; // Validar que tenemos el id del estudiante
+const handleSave = async () => {
+  try {
+    if (!id) return;
 
-      const formDataToSend = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          // Solo enviar foto si es un File
-          if (key === "fotoId" && !(value instanceof File)) return;
+    const formDataToSend = new FormData();
 
-          formDataToSend.append(key, value as any);
+    Object.entries(form).forEach(([key, value]) => {
+      if (key === "fotoId") {
+        if (value instanceof File) {
+          formDataToSend.append("fotoId", value);
         }
-      });
+        return;
+      }
 
-      // Petición PUT a la API
-      const res = await api.put(
-        `/almuerzo_check/usuarios/editar_estudiante/${id}/`,
-        formDataToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      if (value !== null && value !== undefined) {
+        formDataToSend.append(key, value as any);
+      }
+    });
 
-      console.log("Estudiante actualizado:", res.data);
-      handleClose(); // Cierra el modal al finalizar
-    } catch (error: any) {
-      console.error(
-        "Error al actualizar estudiante:",
-        error.response?.data || error.message
-      );
-    }
-  };
+    const res = await api.put(
+      `/almuerzo_check/usuarios/editar_estudiante/${id}/`,
+      formDataToSend,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+
+    console.log("Estudiante actualizado:", res.data);
+    handleClose();
+  } catch (error: any) {
+    console.error("Error al actualizar estudiante:", error.response?.data || error.message);
+  }
+};
 
   const handleClear = () => {
     setForm({
@@ -188,7 +190,7 @@ export const ModalEditarEstudiantes: React.FC<{ id: number }> = ({ id }) => {
       direccion: "",
       telefono: "",
       correo: "",
-      grado: "",
+      grado: 0,
       grupo: "",
       jornada: "",
       año_ingreso: new Date().getFullYear(),
@@ -198,19 +200,6 @@ export const ModalEditarEstudiantes: React.FC<{ id: number }> = ({ id }) => {
     setUsingCamera(false);
   };
 
-  const grados = [
-    "Primero",
-    "Segundo",
-    "Tercero",
-    "Cuarto",
-    "Quinto",
-    "Sexto",
-    "Séptimo",
-    "Octavo",
-    "Noveno",
-    "Décimo",
-    "Once",
-  ];
   const tiposDocumento = ["CC", "TI", "CE", "RC"];
   const jornadas = ["Mañana", "Tarde", "Noche"];
 
@@ -221,6 +210,28 @@ export const ModalEditarEstudiantes: React.FC<{ id: number }> = ({ id }) => {
   };
   const labelStyle = { fontSize: "1.2rem" };
 
+  const [grados, setGrados] = useState<Grado[]>([]);
+
+  const handleGetGrados = async () => {
+    try {
+      const res = await api.get<GradosResponse>(
+        "/almuerzo_check/grados/listar/"
+      );
+      if (res.data.success) {
+        setGrados(res.data.data);
+      } else {
+        control_error("No se pudieron cargar los grados");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    handleGetGrados();
+  }, []);
+  console.log("grados ", grados);
+  console.log("form ", form);
   return (
     <>
       <Button variant="contained" color="primary" onClick={handleClickOpen}>
@@ -517,7 +528,7 @@ export const ModalEditarEstudiantes: React.FC<{ id: number }> = ({ id }) => {
                 select
                 label="Grado"
                 value={form.grado}
-                onChange={(e) => handleInputChange("grado", e.target.value)}
+onChange={(e) => handleInputChange("grado", Number(e.target.value))}
                 InputProps={{
                   startAdornment: <SchoolIcon />,
                   sx: textFieldStyle,
@@ -526,8 +537,8 @@ export const ModalEditarEstudiantes: React.FC<{ id: number }> = ({ id }) => {
                 required
               >
                 {grados.map((g) => (
-                  <MenuItem key={g} value={g}>
-                    {g}
+                  <MenuItem key={g.id} value={g.id}>
+                    {g.nombre_grado}- {g.salon}
                   </MenuItem>
                 ))}
               </TextField>

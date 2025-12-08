@@ -50,13 +50,13 @@ export const MenuUsuarioVisual: React.FC = () => {
   };
 
   const items = [
-    {
-      titulo: "Créditos",
-      valor: userData.creditos,
-      estado: userData.creditosEstado,
-      color: creditos === 0 ? "error.main" : "success.main",
-      tipo: "texto",
-    },
+    // {
+    //   titulo: "Créditos",
+    //   valor: userData.creditos,
+    //   estado: userData.creditosEstado,
+    //   color: creditos === 0 ? "error.main" : "success.main",
+    //   tipo: "texto",
+    // },
     {
       titulo: "Sugerencias",
       valor: userData.sugerencias,
@@ -99,90 +99,92 @@ export const MenuUsuarioVisual: React.FC = () => {
         </Typography>
       </Grid>
 
-    <Grid container spacing={2} sx={{ width: "100%", maxWidth: 150, padding: 0 }}>
-  {items.map((item) => (
-    <Grid size={{ xs: 12, sm: 6, md: 12 }} key={item.titulo}>
-      <Box
-        sx={{
-          p: 2.5,
-          borderRadius: 3,
-          boxShadow: "0px 4px 12px rgba(0,0,0,0.12)",
-          textAlign: "center",
-          backgroundColor: "white",
-          transition: "transform 0.3s, box-shadow 0.3s",
-          "&:hover": {
-            transform: "translateY(-3px)",
-            boxShadow: "0px 8px 20px rgba(0,0,0,0.2)",
-          },
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
+      <Grid
+        container
+        spacing={2}
+        sx={{ width: "100%", maxWidth: 150, padding: 0 }}
       >
-        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
-          {item.titulo}
-        </Typography>
+        {items.map((item) => (
+          <Grid size={{ xs: 12, sm: 6, md: 12 }} key={item.titulo}>
+            <Box
+              sx={{
+                p: 2.5,
+                borderRadius: 3,
+                boxShadow: "0px 4px 12px rgba(0,0,0,0.12)",
+                textAlign: "center",
+                backgroundColor: "white",
+                transition: "transform 0.3s, box-shadow 0.3s",
+                "&:hover": {
+                  transform: "translateY(-3px)",
+                  boxShadow: "0px 8px 20px rgba(0,0,0,0.2)",
+                },
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
+                {item.titulo}
+              </Typography>
 
-        <Typography
-          variant="h5"
-          sx={{ fontWeight: 900, color: "primary.main", mb: 1 }}
-        >
-          {item.valor}
-        </Typography>
-
-        {item.tipo === "texto" ? (
-          <>
-            <Typography variant="body2" sx={{ mt: 0.5, color: item.color }}>
-              {item.estado}
-            </Typography>
-
-            {/* Nuevo botón para ir a Créditos */}
-            {item.titulo === "Créditos" && (
-              <Button
-                variant="contained"
-                    startIcon={<AttachMoney />}  // <--- ícono agregado
-
-                color="secondary"
-                fullWidth
-                sx={{
-                  mt: 1.5,
-                  fontWeight: "bold",
-                  transition: "all 0.3s",
-                  "&:hover": {
-                    transform: "scale(1.05)",
-                    boxShadow: "0px 4px 15px rgba(0,0,0,0.25)",
-                  },
-                }}
-                onClick={() => navigate("/Credito")}
+              <Typography
+                variant="h5"
+                sx={{ fontWeight: 900, color: "primary.main", mb: 1 }}
               >
-              Créditos
-              </Button>
-            )}
-          </>
-        ) : (
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Send />}
-            onClick={() => navigate("/Sugerencias")}
-            sx={{
-              mt: 1,
-              transition: "all 0.3s",
-              "&:hover": {
-                transform: "scale(1.05)",
-                boxShadow: "0px 4px 15px rgba(0,0,0,0.25)",
-              },
-            }}
-          >
-            Enviar
-          </Button>
-        )}
-      </Box>
-    </Grid>
-  ))}
-</Grid>
+                {item.valor}
+              </Typography>
 
+              {item.tipo === "texto" ? (
+                <>
+                  {/* <Typography variant="body2" sx={{ mt: 0.5, color: item.color }}>
+              {item.estado}
+            </Typography> */}
+
+                  {/* Nuevo botón para ir a Créditos */}
+                  {item.titulo === "Créditos" && (
+                    <Button
+                      variant="contained"
+                      startIcon={<AttachMoney />} // <--- ícono agregado
+                      color="secondary"
+                      fullWidth
+                      sx={{
+                        mt: 1.5,
+                        fontWeight: "bold",
+                        transition: "all 0.3s",
+                        "&:hover": {
+                          transform: "scale(1.05)",
+                          boxShadow: "0px 4px 15px rgba(0,0,0,0.25)",
+                        },
+                      }}
+                      onClick={() => navigate("/Credito")}
+                    >
+                      Créditos
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<Send />}
+                  onClick={() => navigate("/Sugerencias")}
+                  sx={{
+                    mt: 1,
+                    transition: "all 0.3s",
+                    "&:hover": {
+                      transform: "scale(1.05)",
+                      boxShadow: "0px 4px 15px rgba(0,0,0,0.25)",
+                    },
+                  }}
+                >
+                  Enviar
+                </Button>
+              )}
+            </Box>
+          </Grid>
+        ))}
+      </Grid>
 
       {/* Botón salir fijo al final */}
       <Grid

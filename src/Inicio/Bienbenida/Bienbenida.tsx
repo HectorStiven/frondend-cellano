@@ -54,6 +54,7 @@ export const Bienvenida = () => {
             alignItems: "center",
             gap: 2,
             maxWidth: 500,
+            maxHeight: "90vh",
           }}
         >
           <Avatar
@@ -63,11 +64,7 @@ export const Bienvenida = () => {
           />
 
           <Typography variant="h4" fontWeight="bold" color="primary">
-            ¡Bienvenido al Restaurante Escolar <br /> Neil Armstrong!
-          </Typography>
-
-          <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>
-            Hoy es un excelente día para disfrutar un buen almuerzo 🍽️
+            ¡Bienvenido al Restaurante Escolar  Neil Armstrong!
           </Typography>
 
           <motion.div

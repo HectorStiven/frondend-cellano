@@ -16,11 +16,11 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import SearchIcon from "@mui/icons-material/Search";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { styled } from "@mui/material/styles";
-import { api } from "../../api/Axios";
-import { Title } from "../../Elements/Titulo/Titulo";
+import { api } from "../../../api/Axios";
+import { Title } from "../../../Elements/Titulo/Titulo";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
-import { download_pdf } from "../../Elements/DescargarDocumentos/PDF_descargar";
-import { download_xls } from "../../Elements/DescargarDocumentos/XLS_descargar";
+import { download_pdf } from "../../../Elements/DescargarDocumentos/PDF_descargar";
+import { download_xls } from "../../../Elements/DescargarDocumentos/XLS_descargar";
 
 // 🔹 Tipos de respuesta
 interface Consumo {
@@ -97,8 +97,13 @@ const FoodSwitch = styled((props: SwitchProps) => <Switch {...props} />)(
 );
 
 export const Reportes: React.FC = () => {
+
+    const fechaActual = new Date().toISOString().split("T")[0];
+
+
+
   const [reportes, setReportes] = useState<Consumo[]>([]);
-  const [fecha, setFecha] = useState("2025-11-03");
+  const [fecha, setFecha] = useState(fechaActual);
   const [switchValue, setSwitchValue] = useState(true);
   const [sinRegistro, setSinRegistro] = useState(true);
   const [cargando, setCargando] = useState(false);
@@ -139,7 +144,6 @@ export const Reportes: React.FC = () => {
             </Tooltip>
           ),
         },
-        { field: "plato_principal", headerName: "Plato Principal", flex: 2 },
         { field: "fecha", headerName: "Fecha", flex: 1 },
         { field: "hora", headerName: "Hora", flex: 1 },
         { field: "identificacion", headerName: "Identificación", flex: 1 },
@@ -260,6 +264,7 @@ export const Reportes: React.FC = () => {
         <Button
           variant="contained"
           color="success"
+          fullWidth
           startIcon={<SearchIcon />}
           onClick={handleBuscar}
           sx={{

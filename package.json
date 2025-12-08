@@ -23,6 +23,7 @@
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "leaflet": "^1.9.4",
+    "lightswind": "^3.1.18",
     "lucide-react": "^0.548.0",
     "primeicons": "^7.0.0",
     "primereact": "^10.9.7",

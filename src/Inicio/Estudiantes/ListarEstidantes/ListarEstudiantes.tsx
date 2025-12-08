@@ -19,7 +19,9 @@ import BadgeIcon from "@mui/icons-material/Badge";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
-import GroupIcon from "@mui/icons-material/Group"; // 👈 ícono para "Alumnos"
+import GroupIcon from "@mui/icons-material/Group";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+
 import { api } from "../../../api/Axios";
 import { download_pdf } from "../../../Elements/DescargarDocumentos/PDF_descargar";
 import { download_xls } from "../../../Elements/DescargarDocumentos/XLS_descargar";
@@ -27,7 +29,8 @@ import { ModalCrearEstudiantes } from "../CrearEstudiantes/CrearEstudiantes";
 import { ModalEditarEstudiantes } from "../EditarEstudiantes/EditarEstudiantes";
 import { ListarAcudiente } from "../Acudientes/ListarAcudiente/ListarAcudiente";
 import { InformacionEstudiante } from "../InformacionEstudiante/InformacionEstudiante";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney"; // puedes cambiar el icono
+import { Grado, GradosResponse } from "../CrearEstudiantes/CrearEstudiantesInterfaces";
+import { control_error } from "../../../Elements/alertas/alertaError";
 
 interface Estudiante {
   id: number;
@@ -49,10 +52,18 @@ const initialData = {
 
 export const ListarEstudiantes: React.FC = () => {
   const [formData, setFormData] = useState(initialData);
+
+  // Lista que se muestra en la tabla
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
+
+  // Copia original (para aplicar filtros sin perder datos)
+  const [estudiantesOriginal, setEstudiantesOriginal] = useState<
+    Estudiante[]
+  >([]);
+
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(
     null
-  ); // 👈 id del estudiante seleccionado
+  );
 
   const handleInputChange = (
     field: keyof typeof initialData,
@@ -61,14 +72,16 @@ export const ListarEstudiantes: React.FC = () => {
     setFormData({ ...formData, [field]: value });
   };
 
+  // 🔹 Obtener estudiantes desde API
   const fetchEstudiantes = async () => {
     try {
       const res = await api.get<{ data: Estudiante[] }>(
         "/almuerzo_check/usuarios/listar_estudiantes/"
       );
       setEstudiantes(res.data.data);
+      setEstudiantesOriginal(res.data.data); // 👈 copiamos respaldo
     } catch (error: any) {
-      console.error(error.response.data.detail);
+      console.error(error.response?.data?.detail);
     }
   };
 
@@ -80,9 +93,38 @@ export const ListarEstudiantes: React.FC = () => {
     fetchEstudiantes();
   }, []);
 
-  const handleSearch = () => fetchEstudiantes();
+  // 🔍 FILTRO
+  const aplicarFiltros = () => {
+    let filtrados = estudiantesOriginal;
 
-  // 🔹 Nueva función: seleccionar estudiante para mostrar acudientes
+    if (formData.identificacion.trim() !== "") {
+      filtrados = filtrados.filter((e) =>
+        e.identificacion
+          ?.toLowerCase()
+          .includes(formData.identificacion.toLowerCase())
+      );
+    }
+
+    if (formData.primer_nombre.trim() !== "") {
+      filtrados = filtrados.filter((e) =>
+        e.primer_nombre
+          ?.toLowerCase()
+          .includes(formData.primer_nombre.toLowerCase())
+      );
+    }
+
+    if (formData.grado.trim() !== "") {
+      filtrados = filtrados.filter(
+        (e) => e.grado.toLowerCase() === formData.grado.toLowerCase()
+      );
+    }
+
+    setEstudiantes(filtrados);
+  };
+
+  // ▶ Botón Buscar
+  const handleSearch = () => aplicarFiltros();
+
   const handleShowAcudientes = (id: number) => {
     setSelectedStudentId(id);
   };
@@ -92,13 +134,9 @@ export const ListarEstudiantes: React.FC = () => {
       field: "fotoId",
       headerName: "Foto",
       flex: 0.4,
-
       renderCell: (params) => (
         <Tooltip title={params.row.primer_nombre}>
-          <Avatar
-            src={params.value}
-            alt={params.row.primer_nombre}
-          />
+          <Avatar src={params.value} alt={params.row.primer_nombre} />
         </Tooltip>
       ),
     },
@@ -123,7 +161,7 @@ export const ListarEstudiantes: React.FC = () => {
       field: "estado",
       headerName: "Estado",
       flex: 0.6,
-      renderCell: (params: any) => (
+      renderCell: (params) => (
         <Chip
           label={params.value ? "Activo" : "Inactivo"}
           color={params.value ? "success" : "error"}
@@ -134,10 +172,9 @@ export const ListarEstudiantes: React.FC = () => {
       field: "acciones",
       headerName: "Acciones",
       flex: 1.8,
-      renderCell: (params: any) => (
+      renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <ModalEditarEstudiantes id={params.row.id} />
-
           <Button
             variant="contained"
             sx={{ backgroundColor: "red" }}
@@ -146,7 +183,7 @@ export const ListarEstudiantes: React.FC = () => {
             <DeleteIcon />
           </Button>
 
-          {/* Botón para ver acudientes */}
+          {/* Acudientes */}
           <Button
             variant="contained"
             sx={{ backgroundColor: "orange" }}
@@ -155,7 +192,6 @@ export const ListarEstudiantes: React.FC = () => {
             <GroupIcon />
           </Button>
 
-          {/* Mantienes tu botón existente */}
           <InformacionEstudiante id={params.row.id} />
         </Box>
       ),
@@ -175,20 +211,27 @@ export const ListarEstudiantes: React.FC = () => {
     letterSpacing: 0.5,
   };
 
-  const grados = [
-    "Primero",
-    "Segundo",
-    "Tercero",
-    "Cuarto",
-    "Quinto",
-    "Sexto",
-    "Séptimo",
-    "Octavo",
-    "Noveno",
-    "Décimo",
-    "Once",
-  ];
 
+    const [grados, setGrados] = useState<Grado[]>([]);
+  
+  const handleGetGrados = async () => {
+    try {
+      const res = await api.get<GradosResponse>(
+        "/almuerzo_check/grados/listar/"
+      );
+      if (res.data.success) {
+        setGrados(res.data.data);
+      } else {
+        control_error("No se pudieron cargar los grados");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    handleGetGrados();
+  }, []);
   return (
     <>
       <Grid
@@ -204,7 +247,7 @@ export const ListarEstudiantes: React.FC = () => {
         justifyContent="center"
         alignItems="center"
       >
-        {/* Campo: Identificación */}
+        {/* Identificación */}
         <Grid size={{ xs: 12, md: 4 }}>
           <TextField
             fullWidth
@@ -226,14 +269,16 @@ export const ListarEstudiantes: React.FC = () => {
           />
         </Grid>
 
-        {/* Campo: Primer Nombre */}
+        {/* Primer Nombre */}
         <Grid size={{ xs: 12, md: 4 }}>
           <TextField
             fullWidth
             label="Primer Nombre"
             variant="outlined"
             value={formData.primer_nombre}
-            onChange={(e) => handleInputChange("primer_nombre", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("primer_nombre", e.target.value)
+            }
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -246,9 +291,9 @@ export const ListarEstudiantes: React.FC = () => {
           />
         </Grid>
 
-        {/* Campo: Grado */}
+        {/* Grado */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl   fullWidth>
+          <FormControl fullWidth>
             <InputLabel sx={labelStyle}>Grado</InputLabel>
             <Select
               label="Grado"
@@ -257,8 +302,8 @@ export const ListarEstudiantes: React.FC = () => {
               sx={{ ...textFieldStyle, borderRadius: "20px" }}
             >
               {grados.map((g, index) => (
-                <MenuItem key={index} value={g}>
-                  {g}
+                <MenuItem key={index} value={g.nombre_grado}>
+                  {g.nombre_grado}-{g.salon}
                 </MenuItem>
               ))}
             </Select>
@@ -288,7 +333,11 @@ export const ListarEstudiantes: React.FC = () => {
         {/* Exportar */}
         <Grid size={{ xs: 12 }}>
           <ButtonGroup
-            style={{ margin: 1, display: "flex", justifyContent: "flex-end" }}
+            style={{
+              margin: 1,
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
           >
             {download_xls({ nurseries: estudiantes, columns })}
             {download_pdf({
@@ -315,16 +364,13 @@ export const ListarEstudiantes: React.FC = () => {
           />
         </Grid>
 
-        {/* Modales */}
-        <Grid
-          size={{ xs: 6 }}
-          sx={{ display: "flex", justifyContent: "center" }}
-        >
+        {/* Crear */}
+        <Grid size={{ xs: 6 }} sx={{ display: "flex", justifyContent: "center" }}>
           <ModalCrearEstudiantes />
         </Grid>
       </Grid>
 
-      {/* 👇 Aquí se muestra ListarAcudiente solo si se seleccionó un estudiante */}
+      {/* ACUDIENTES */}
       {selectedStudentId && <ListarAcudiente id={selectedStudentId} />}
     </>
   );

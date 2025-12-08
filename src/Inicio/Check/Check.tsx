@@ -19,6 +19,8 @@ import { Info } from "./Info/Info";
 import { Estudiante, estudianteInicial } from "./CheckInterfaces";
 import { motion } from "framer-motion";
 import { Face6Rounded } from "@mui/icons-material"; // ✅ ícono de rostro disponible
+import { Reportes } from "./Reportes/Reportes";
+import { ModalCheckExternos } from "./CheckEcternos";
 
 interface ReconocimientoResponse {
   success: boolean;
@@ -140,7 +142,9 @@ export const CheckEstudiante: React.FC = () => {
         control_error("No se reconoció ningún rostro 😢");
       }
     } catch (error: any) {
-      control_error("Error al enviar la foto.");
+      control_error(
+        error?.response?.data?.detail || "Error al enviar la foto."
+      );
     } finally {
       setEnviando(false);
     }
@@ -164,75 +168,99 @@ export const CheckEstudiante: React.FC = () => {
   };
 
   return (
-    <Grid
-      container
-      spacing={3}
-      sx={{
-        p: 4,
-        backgroundColor: "#fafafa",
-        borderRadius: 4,
-        boxShadow: 4,
-        m: 3,
-      }}
-    >
-      {/* Título */}
-      <Grid size={{ xs: 12 }}>
-        <Title title="Check Estudiante" />
-      </Grid>
+    <>
+      <Grid
+        container
+        spacing={3}
+        sx={{
+          p: 4,
+          backgroundColor: "#fafafa",
+          borderRadius: 4,
+          boxShadow: 4,
+          m: 3,
+        }}
+      >
+        {/* Título */}
+        <Grid size={{ xs: 12 }}>
+          <Title title="Check Estudiante" />
+        </Grid>
 
-      {/* Lado izquierdo: Cámara */}
-      <Grid size={{ xs: 12, md: 5 }}>
-        <Webcam
-          audio={false}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          videoConstraints={{ facingMode: "user" }}
-          style={{
-            width: "100%",
-            height: 300,
-            borderRadius: "10px",
-          }}
-        />
-
-        {captura && (
+        {/* Lado izquierdo: Cámara */}
+        <Grid
+          size={{ xs: 12, md: 5 }}
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="center"
+        >
           <Box
             sx={{
+              position: "relative",
               display: "flex",
-              flexDirection: "column",
+              justifyContent: "center",
               alignItems: "center",
-              mb: 2,
-              mt: 2,
+              width: "100%",
             }}
           >
-            <Typography variant="body2" sx={{ mb: 1 }}>
-              Previsualización:
-            </Typography>
-            <img
-              src={captura}
-              alt="captura facial"
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              videoConstraints={{ facingMode: "user" }}
               style={{
-                width: "150px",
+                width: "75%",
                 height: "auto",
-                borderRadius: "10px",
-                border: "2px solid #ccc",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                borderRadius: "16px",
+                objectFit: "cover",
+                boxShadow: "0 0 15px rgba(0,0,0,0.3)",
               }}
             />
           </Box>
-        )}
 
-        <Grid container justifyContent="center" mt={2}>
+          {/* Previsualización */}
+          {captura && (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                mb: 2,
+                mt: 3,
+              }}
+            >
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                Previsualización:
+              </Typography>
+              <img
+                src={captura}
+                alt="captura facial"
+                style={{
+                  width: "150px",
+                  height: "auto",
+                  borderRadius: "10px",
+                  border: "2px solid #ccc",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                }}
+              />
+            </Box>
+          )}
+
+          {/* Botón de escaneo */}
           <Button
             variant="contained"
             color="success"
             onClick={handleEnviarFoto}
             disabled={enviando}
-            fullWidth
             sx={{
+              "&:hover": {
+                transform: "scale(1.05)",
+                backgroundColor: "#0E2050",
+                boxShadow: 6,
+              },
               py: 1.5,
+              px: 4,
               fontSize: "1rem",
               fontWeight: "bold",
-              width: "50%",
               textTransform: "none",
               display: "flex",
               alignItems: "center",
@@ -240,6 +268,7 @@ export const CheckEstudiante: React.FC = () => {
               gap: 1,
               borderRadius: 3,
               boxShadow: 3,
+              mt: 2,
             }}
           >
             {enviando ? (
@@ -260,84 +289,96 @@ export const CheckEstudiante: React.FC = () => {
             )}
           </Button>
         </Grid>
-      </Grid>
 
-      {/* Divisor vertical */}
-      <Grid
-        size={{ xs: 12, md: 1 }}
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Box
-          sx={{
-            width: "2px",
-            height: "80%",
-            background: "linear-gradient(to bottom, #0d47a1, #42a5f5, #0d47a1)",
-            borderRadius: "2px",
-          }}
-        />
-      </Grid>
-
-      {/* Lado derecho: Formulario */}
-      <Grid size={{ xs: 12, md: 6 }}>
-        <Grid size={{ xs: 12 }}>
-          <TextField
-            fullWidth
-            label="Correo"
-            variant="outlined"
-            value={form.correo}
-            onChange={(e) => handleInputChange("correo", e.target.value)}
-            InputProps={{
-              startAdornment: <EmailIcon sx={{ mr: 1, color: "#1976d2" }} />,
-            }}
-            sx={textFieldStyle}
-            InputLabelProps={{ sx: labelStyle }}
-            margin="normal"
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12 }}>
-          <TextField
-            fullWidth
-            label="Identificación"
-            value={form.identificacion}
-            onChange={(e) =>
-              handleInputChange("identificacion", e.target.value)
-            }
-            InputProps={{
-              startAdornment: <BadgeIcon sx={{ mr: 1, color: "#388e3c" }} />,
-            }}
-            sx={textFieldStyle}
-            InputLabelProps={{ sx: labelStyle }}
-            margin="normal"
-          />
-        </Grid>
-
+        {/* Divisor vertical */}
         <Grid
-          size={{ xs: 4 }}
-          display="flex"
-          justifyContent="center"
-          gap={2}
-          mt={2}
+          size={{ xs: 12, md: 1 }}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
         >
-          <Button
-            variant="contained"
-            startIcon={<SearchIcon />}
-            onClick={handleBuscar}
-            color="success"
-            sx={{ borderRadius: 5 }}
-          >
-            Buscar Estudiante
-          </Button>
+          <Box
+            sx={{
+              width: "2px",
+              height: "80%",
+              background:
+                "linear-gradient(to bottom, #0d47a1, #42a5f5, #0d47a1)",
+              borderRadius: "2px",
+            }}
+          />
         </Grid>
 
-        <Grid size={{ xs: 12 }}>
-          <Info estudiante={estudiante} onClose={handleClose} />
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12 }}>
+            <TextField
+              fullWidth
+              label="Identificación"
+              value={form.identificacion}
+              onChange={(e) =>
+                handleInputChange("identificacion", e.target.value)
+              }
+              InputProps={{
+                startAdornment: <BadgeIcon sx={{ mr: 1, color: "#388e3c" }} />,
+              }}
+              sx={textFieldStyle}
+              InputLabelProps={{ sx: labelStyle }}
+              margin="normal"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12 }}>
+            <TextField
+              fullWidth
+              label="Correo"
+              variant="outlined"
+              value={form.correo}
+              onChange={(e) => handleInputChange("correo", e.target.value)}
+              InputProps={{
+                startAdornment: <EmailIcon sx={{ mr: 1, color: "#1976d2" }} />,
+              }}
+              sx={textFieldStyle}
+              InputLabelProps={{ sx: labelStyle }}
+              margin="normal"
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12 }} mt={2}>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 6 }}>
+                <Button
+                  variant="contained"
+                  startIcon={<SearchIcon />}
+                  onClick={handleBuscar}
+                  color="success"
+                  fullWidth
+                  sx={{
+                    "&:hover": {
+                      transform: "scale(1.05)",
+                      backgroundColor: "#0E2050",
+                      boxShadow: 6,
+                    },
+                    borderRadius: "12px",
+                  }}
+                >
+                  Buscar Estudiante
+                </Button>
+              </Grid>
+
+              <Grid size={{ xs: 6 }}>
+                <ModalCheckExternos />
+              </Grid>
+            </Grid>
+          </Grid>
+
+          <Grid size={{ xs: 12 }}>
+            <Info estudiante={estudiante} onClose={handleClose} />
+          </Grid>
         </Grid>
       </Grid>
-    </Grid>
+
+      <Reportes />
+    </>
   );
 };

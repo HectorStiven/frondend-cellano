@@ -26,12 +26,12 @@ import { RootState } from "../../store";
 import { useSelector } from "react-redux";
 
 const pages = [
-  "Menu",
-  "Consumos",
+  // "Menu",
+  // "MenuAdmin",
+  // "ListaSugerencias",
+  // "Consumos",
   "Estudiantes",
-  "MenuAdmin",
   "Check",
-  "ListaSugerencias",
   "Reportes",
   "Pagos",
 ];

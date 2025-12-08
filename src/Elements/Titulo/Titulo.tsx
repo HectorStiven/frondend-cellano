@@ -12,7 +12,7 @@ export const Title: React.FC<Props> = ({ title, width, fontSize }: Props) => {
       sx={{
         display: 'grid',
         background:
-          'linear-gradient(90deg, hsla(218, 99%, 50%, 1.00) 41%, rgba(50, 50, 194, 0.63) 73%, rgba(0, 213, 255, 0.39) 100%) 0% 0% no-repeat padding-box',
+          'linear-gradient(90deg, #0E2050 41%, rgba(50, 50, 194, 0.63) 73%, rgba(0, 213, 255, 0.39) 100%) 0% 0% no-repeat padding-box',
         width: width || '100%',
         margin: '0 auto',
         height: '40px',

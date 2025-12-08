@@ -26,6 +26,8 @@ import { CreditCard, HourglassEmpty } from "@mui/icons-material";
 import { CheckCircle, Block } from "@mui/icons-material";
 import { Title } from "../../Elements/Titulo/Titulo";
 import { HistorialPagos } from "./HistorialPagos/HistorialPagos";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import * as XLSX from "xlsx"; // <-- Importar XLSX
 
 interface Estudiante {
   id: number;
@@ -266,6 +268,34 @@ export const ControlPagos: React.FC = () => {
     letterSpacing: 0.5,
   };
 
+
+
+  
+    const handleEscanearExcel = () => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".xlsx, .xls";
+      input.onchange = (e: any) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const bstr = evt.target?.result;
+          const wb = XLSX.read(bstr, { type: "binary" });
+          const wsname = wb.SheetNames[0];
+          const ws = wb.Sheets[wsname];
+          const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[]; // obtiene array de arrays
+          const nombres: string[] = [];
+          const firstCol = data.slice(1); // saltar la cabecera
+          firstCol.forEach((row) => {
+            if (row[0]) nombres.push(row[0]);
+          });
+          console.log("Nombres concatenados:", nombres.join(", "));
+        };
+        reader.readAsBinaryString(file);
+      };
+      input.click();
+    };
+  
   return (
     <>
       <Grid
@@ -344,9 +374,33 @@ export const ControlPagos: React.FC = () => {
             Buscar
           </Button>
         </Grid>
+         <Grid size={{ xs: 3 }} container justifyContent="flex-end">
+                <Button
+                  variant="contained"
+                  startIcon={<UploadFileIcon sx={{ fontSize: 24 }} />}
+                  onClick={handleEscanearExcel}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: "bold",
+                    backgroundColor: "hsla(110, 100%, 26%, 1.00)", // azul destacado
+                    color: "#fff",
+                    borderRadius: 3,
+                    px: 3,
+                    py: 1.5,
+                    "&:hover": {
+                      backgroundColor: "#0E2050", // azul más oscuro al pasar el mouse
+                    },
+                    boxShadow: 3,
+                    fontSize: "1rem",
+                  }}
+                >
+                  Escanear Excel
+                </Button>
+              </Grid>
+
 
         {/* Exportar */}
-        <Grid size={{ xs: 12 }}>
+        <Grid size={{ xs: 9 }}>
           <ButtonGroup
             style={{ margin: 1, display: "flex", justifyContent: "flex-end" }}
           >

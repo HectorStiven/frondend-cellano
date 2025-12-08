@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  Grid,
-  TextField,
-  InputAdornment,
-  Button,
-  Chip,
-} from "@mui/material";
+import { Grid, TextField, InputAdornment, Button, Chip } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import SearchIcon from "@mui/icons-material/Search";
@@ -41,24 +35,30 @@ export const ListarAcudiente: React.FC<ListarAcudienteProps> = ({ id }) => {
   const [formData, setFormData] = useState(initialData);
   const [acudientes, setAcudientes] = useState<Acudiente[]>([]);
 
-  const handleInputChange = (field: keyof typeof initialData, value: string) => {
+  const handleInputChange = (
+    field: keyof typeof initialData,
+    value: string
+  ) => {
     setFormData({ ...formData, [field]: value });
   };
 
-const fetchAcudientes = useCallback(async () => {
-  if (!id) return;
+  const fetchAcudientes = useCallback(async () => {
+    if (!id) return;
 
-  try {
-    const res = await api.get<{ data: Acudiente[] }>(
-      `/almuerzo_check/usuarios/listar_acudientes/${id}/`
-    );
-    setAcudientes(res.data.data);
-  } catch (error) {
-    console.error(error);
-    Swal.fire("Error", "No se pudieron cargar los acudientes.", "error");
-  }
-}, [id]);
+    try {
+      const res = await api.get<{ data: Acudiente[] }>(
+        `/almuerzo_check/usuarios/listar_acudientes/${id}/`
+      );
+      setAcudientes(res.data.data);
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "No se pudieron cargar los acudientes.", "error");
+    }
+  }, [id]);
 
+  const handleDelete = (id: number) => {
+    console.log("ID a eliminar:", id);
+  };
 
   const handleSearch = () => {
     fetchAcudientes();
@@ -68,9 +68,9 @@ const fetchAcudientes = useCallback(async () => {
     setFormData(initialData);
     setAcudientes([]);
   };
-useEffect(() => {
-  if (id) fetchAcudientes();
-}, [id, fetchAcudientes]);
+  useEffect(() => {
+    if (id) fetchAcudientes();
+  }, [id, fetchAcudientes]);
 
   const columns: GridColDef[] = [
     { field: "nombre", headerName: "Nombre", flex: 1 },
@@ -86,6 +86,23 @@ useEffect(() => {
           label={params.value ? "Activo" : "Inactivo"}
           color={params.value ? "success" : "error"}
         />
+      ),
+    },
+    {
+      field: "acciones",
+      headerName: "Acciones",
+      flex: 0.6,
+      align: "center",
+      sortable: false,
+      renderCell: (params) => (
+        <Button
+          variant="contained"
+          color="error"
+          size="small"
+          onClick={() => handleDelete(params.row.id)}
+        >
+          Eliminar
+        </Button>
       ),
     },
   ];
@@ -136,83 +153,82 @@ useEffect(() => {
       <Grid size={{ xs: 12 }}>
         {/* Título */}
         <Title title="Listar Acudientes" />
+      </Grid>
+      <Grid
+        container
+        sx={{
+          p: 2,
+          background: "#FAFAFA",
+          borderRadius: "15px",
+          boxShadow: "0px 3px 6px #042F4A26",
+        }}
+        spacing={2}
+      >
+        {/* Filtros */}
+        <Grid size={{ xs: 12, md: 8 }}>
+          <TextField
+            fullWidth
+            label="Nombre"
+            variant="outlined"
+            value={formData.nombre}
+            onChange={(e) => handleInputChange("nombre", e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AccountCircle />
+                </InputAdornment>
+              ),
+              sx: textFieldStyle,
+            }}
+            InputLabelProps={{ sx: labelStyle }}
+          />
+        </Grid>
 
-        <Grid
-          container
-          sx={{
-            p: 2,
-            background: "#FAFAFA",
-            borderRadius: "15px",
-            boxShadow: "0px 3px 6px #042F4A26",
-          }}
-          spacing={2}
-        >
-          {/* Filtros */}
-          <Grid size={{ xs: 12, md: 8 }}>
-            <TextField
-              fullWidth
-              label="Nombre"
-              variant="outlined"
-              value={formData.nombre}
-              onChange={(e) => handleInputChange("nombre", e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <AccountCircle />
-                  </InputAdornment>
-                ),
-                sx: textFieldStyle,
-              }}
-              InputLabelProps={{ sx: labelStyle }}
-            />
-          </Grid>
+        <Grid size={{ xs: 12, md: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<SearchIcon />}
+            sx={{
+              width: "100%",
+              height: 56,
+              borderRadius: 3,
+              backgroundColor: "green",
+              fontSize: "1rem",
+              textTransform: "none",
+              fontWeight: "bold",
+            }}
+            onClick={handleSearch}
+          >
+            Buscar
+          </Button>
+        </Grid>
 
-          <Grid size={{ xs: 12, md: 2 }}>
-            <Button
-              variant="contained"
-              startIcon={<SearchIcon />}
-              sx={{
-                width: "90%",
-                height: 60,
-                borderRadius: 20,
-                backgroundColor: "green",
-                fontSize: "1.1rem",
-                margin: 1,
-              }}
-              onClick={handleSearch}
-            >
-              Buscar
-            </Button>
-          </Grid>
+        <Grid size={{ xs: 12, md: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ClearIcon />}
+            sx={{
+              width: "100%",
+              height: 56,
+              borderRadius: 3,
+              fontSize: "1rem",
+              color: "red",
+              borderColor: "red",
+            }}
+            onClick={handleClear}
+          >
+            Limpiar
+          </Button>
+        </Grid>
 
-          <Grid size={{ xs: 12, md: 2 }}>
-            <Button
-              variant="outlined"
-              startIcon={<ClearIcon />}
-              sx={{
-                width: "90%",
-                height: 60,
-                borderRadius: 20,
-                fontSize: "1.1rem",
-                margin: 1,
-                color: "red",
-                borderColor: "red",
-              }}
-              onClick={handleClear}
-            >
-              Limpiar
-            </Button>
-          </Grid>
-
-          {/* Tabla */}
-          <Grid size={{ xs: 12 }}>
-            <DataGrid
-              rows={acudientes}
-              columns={columns}
-              autoHeight
-              getRowId={(row) => row.id}
-            />
-          </Grid>
+        {/* Tabla */}
+        <Grid size={{ xs: 12 }}>
+          <DataGrid
+            rows={acudientes}
+            columns={columns}
+            autoHeight
+            getRowId={(row) => row.id}
+          />
         </Grid>
       </Grid>
     </Grid>

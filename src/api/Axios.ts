@@ -4,7 +4,7 @@ import { store } from "../store";
 export const api = axios.create({
   // baseURL: "https://14j89qkn-8000.use.devtunnels.ms/",
   // baseURL: "http://127.0.0.1:8000",
-    baseURL: "http://72.60.175.200:8999",
+    baseURL: "https://api-cellano.devdaniel.info/",
 
     // baseURL: "https://backend-cellano-6.onrender.com",
 });

@@ -21,6 +21,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
 import GroupIcon from "@mui/icons-material/Group";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import Swal from "sweetalert2";
 
 import { api } from "../../../api/Axios";
 import { download_pdf } from "../../../Elements/DescargarDocumentos/PDF_descargar";
@@ -29,15 +30,25 @@ import { ModalCrearEstudiantes } from "../CrearEstudiantes/CrearEstudiantes";
 import { ModalEditarEstudiantes } from "../EditarEstudiantes/EditarEstudiantes";
 import { ListarAcudiente } from "../Acudientes/ListarAcudiente/ListarAcudiente";
 import { InformacionEstudiante } from "../InformacionEstudiante/InformacionEstudiante";
-import { Grado, GradosResponse } from "../CrearEstudiantes/CrearEstudiantesInterfaces";
+import {
+  Grado,
+  GradosResponse,
+} from "../CrearEstudiantes/CrearEstudiantesInterfaces";
 import { control_error } from "../../../Elements/alertas/alertaError";
+import { control_success } from "../../../Elements/alertas/alertaSucces";
 
+interface ApiDeleteResponse {
+  success: boolean;
+  detail: string;
+}
 interface Estudiante {
   id: number;
   identificacion: string;
   primer_nombre: string;
   primer_apellido: string;
   grado: string;
+  grado_nombre: string;
+  salon: string;
   grupo: string;
   jornada: string;
   estado: boolean;
@@ -57,9 +68,9 @@ export const ListarEstudiantes: React.FC = () => {
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
 
   // Copia original (para aplicar filtros sin perder datos)
-  const [estudiantesOriginal, setEstudiantesOriginal] = useState<
-    Estudiante[]
-  >([]);
+  const [estudiantesOriginal, setEstudiantesOriginal] = useState<Estudiante[]>(
+    []
+  );
 
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(
     null
@@ -86,7 +97,41 @@ export const ListarEstudiantes: React.FC = () => {
   };
 
   const deleteEstudiante = async (id: number) => {
-    console.log("Eliminar estudiante con id:", id);
+    try {
+      const confirm = await Swal.fire({
+        title: "¿Está seguro?",
+        text: "Esta acción eliminará al estudiante de forma permanente.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        reverseButtons: true,
+      });
+
+      if (!confirm.isConfirmed) {
+        control_error("Operación cancelada.");
+        return;
+      }
+
+      const res = await api.delete<ApiDeleteResponse>(
+        `/almuerzo_check/usuarios/eliminar_estudiante/${id}/`
+      );
+
+      if (res.data.success) {
+        control_success(
+          res.data.detail || "Estudiante eliminado correctamente."
+        );
+      } else {
+        control_error(res.data.detail || "No se pudo eliminar el estudiante.");
+      }
+
+      fetchEstudiantes();
+    } catch (error: any) {
+      control_error(
+        error?.response?.data?.detail ||
+          "Error al intentar eliminar el estudiante."
+      );
+    }
   };
 
   useEffect(() => {
@@ -130,6 +175,7 @@ export const ListarEstudiantes: React.FC = () => {
   };
 
   const columns: GridColDef[] = [
+    // { field: "id", headerName: "ID", flex: 0.5 },
     {
       field: "fotoId",
       headerName: "Foto",
@@ -143,7 +189,21 @@ export const ListarEstudiantes: React.FC = () => {
     { field: "identificacion", headerName: "Identificación", flex: 1 },
     { field: "primer_nombre", headerName: "Primer Nombre", flex: 1 },
     { field: "primer_apellido", headerName: "Primer Apellido", flex: 1 },
-    { field: "grado", headerName: "Grado", flex: 0.6 },
+
+{
+  field: "grado_salon",
+  headerName: "Grado",
+  flex: 1,
+  renderCell: (params) => {
+    const grado = params.row.grado_nombre || "";
+    const salon = params.row.salon || "";
+    
+    // Si salon es 0 o vacío, mostramos solo el grado
+    return salon && salon !== "0" ? `${grado} - ${salon}` : grado;
+  }
+}
+
+,
     {
       field: "creditos",
       headerName: "Créditos",
@@ -211,9 +271,8 @@ export const ListarEstudiantes: React.FC = () => {
     letterSpacing: 0.5,
   };
 
+  const [grados, setGrados] = useState<Grado[]>([]);
 
-    const [grados, setGrados] = useState<Grado[]>([]);
-  
   const handleGetGrados = async () => {
     try {
       const res = await api.get<GradosResponse>(
@@ -276,9 +335,7 @@ export const ListarEstudiantes: React.FC = () => {
             label="Primer Nombre"
             variant="outlined"
             value={formData.primer_nombre}
-            onChange={(e) =>
-              handleInputChange("primer_nombre", e.target.value)
-            }
+            onChange={(e) => handleInputChange("primer_nombre", e.target.value)}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -365,7 +422,10 @@ export const ListarEstudiantes: React.FC = () => {
         </Grid>
 
         {/* Crear */}
-        <Grid size={{ xs: 6 }} sx={{ display: "flex", justifyContent: "center" }}>
+        <Grid
+          size={{ xs: 6 }}
+          sx={{ display: "flex", justifyContent: "center" }}
+        >
           <ModalCrearEstudiantes />
         </Grid>
       </Grid>

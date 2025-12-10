@@ -9,6 +9,9 @@ import {
   Avatar,
   MenuItem,
   Box,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
@@ -36,7 +39,9 @@ import {
   GradosResponse,
   initialFormState,
 } from "./CrearEstudiantesInterfaces";
-
+import MaleIcon from "@mui/icons-material/Male";
+import FemaleIcon from "@mui/icons-material/Female";
+import TransgenderIcon from "@mui/icons-material/Transgender";
 export const ModalCrearEstudiantes: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<EstudiantesForm>(initialFormState);
@@ -95,6 +100,8 @@ export const ModalCrearEstudiantes: React.FC = () => {
     setOpen(false);
     setUsingCamera(false);
   };
+
+  console.log(form);
 
   const handleSave = async () => {
     try {
@@ -362,20 +369,36 @@ export const ModalCrearEstudiantes: React.FC = () => {
             </Grid>
 
             {/* Resto de campos */}
+
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                fullWidth
-                label="Género"
-                value={form.genero}
-                onChange={(e) => handleInputChange("genero", e.target.value)}
-                InputProps={{
-                  startAdornment: <PersonIcon />,
-                  sx: textFieldStyle,
-                }}
-                InputLabelProps={{ sx: labelStyle }}
-                placeholder="M/F"
-                required
-              />
+              <FormControl fullWidth>
+                <InputLabel sx={labelStyle}>Género</InputLabel>
+
+                <Select
+                  label="Género"
+                  value={form.genero}
+                  onChange={(e) => handleInputChange("genero", e.target.value)}
+                  sx={textFieldStyle}
+                  required
+                >
+                  <MenuItem value="M">
+                    <MaleIcon style={{ color: "blue", marginRight: 8 }} />
+                    Hombre
+                  </MenuItem>
+
+                  <MenuItem value="F">
+                    <FemaleIcon style={{ color: "deeppink", marginRight: 8 }} />
+                    Mujer
+                  </MenuItem>
+
+                  <MenuItem value="O">
+                    <TransgenderIcon
+                      style={{ color: "gray", marginRight: 8 }}
+                    />
+                    Otro
+                  </MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
@@ -399,7 +422,7 @@ export const ModalCrearEstudiantes: React.FC = () => {
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
-                label="Grupo"
+                label="Condición Especial"
                 value={form.grupo}
                 onChange={(e) => handleInputChange("grupo", e.target.value)}
                 InputProps={{
@@ -531,7 +554,7 @@ export const ModalCrearEstudiantes: React.FC = () => {
           </Button>
           <Button
             variant="contained"
-                   color="success"
+            color="success"
             startIcon={<SaveIcon />}
             onClick={handleSave}
           >

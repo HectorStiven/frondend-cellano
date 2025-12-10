@@ -181,7 +181,7 @@ export const Reportes: React.FC = () => {
         },
         { field: "identificacion", headerName: "Identificación", flex: 1 },
         { field: "primer_nombre", headerName: "Nombre", flex: 1 },
-        { field: "grado", headerName: "Grado", flex: 1 },
+        { field: "grado_nombre", headerName: "Grado", flex: 1 },
         {
           field: "creditos",
           headerName: "Créditos",

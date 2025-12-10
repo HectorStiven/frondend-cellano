@@ -36,6 +36,8 @@ interface Estudiante {
   primer_apellido: string;
   grado: string;
   grupo: string;
+  grado_nombre: string;
+  salon: string;
   jornada: string;
   estado: boolean;
   pago_confirmado?: boolean;
@@ -161,6 +163,9 @@ export const ControlPagos: React.FC = () => {
         }
       }
     });
+
+        fetchEstudiantes();
+
   };
 
   // Ejemplo de columnas
@@ -196,7 +201,19 @@ export const ControlPagos: React.FC = () => {
         />
       ),
     },
-    { field: "grado", headerName: "Grado", flex: 0.7 },
+   {
+  field: "grado_salon",
+  headerName: "Grado",
+  flex:0.7,
+  renderCell: (params) => {
+    const grado = params.row.grado_nombre || "";
+    const salon = params.row.salon || "";
+    
+    // Si salon es 0 o vacío, mostramos solo el grado
+    return salon && salon !== 0 ? `${grado} - ${salon}` : grado;
+  }
+}
+,
   {
   field: "acciones",
   headerName: "Acciones",

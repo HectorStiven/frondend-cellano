@@ -44,7 +44,7 @@ export const initialFormState: EstudiantesForm = {
   telefono: "",
   correo: "",
   grado: "",
-  grupo: "",
+  grupo: "Ninguna",
   jornada: "",
   año_ingreso: new Date().getFullYear(),
   fotoId: null,

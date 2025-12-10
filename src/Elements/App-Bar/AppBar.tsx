@@ -81,7 +81,7 @@ export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
                 textDecoration: "none",
               }}
             >
-              Neil Armstrong
+              CELLANO
             </Typography>
 
             <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -143,7 +143,7 @@ export const ResponsiveAppBar = ({ set_entrar_aplicacion }: any) => {
                 textDecoration: "none",
               }}
             >
-           Neil Armstrong School
+              CELLANO
             </Typography>
             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
               {pages.map((page) => (

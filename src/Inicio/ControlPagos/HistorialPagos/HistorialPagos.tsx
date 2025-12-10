@@ -9,6 +9,10 @@ import {
   ButtonGroup,
   Tooltip,
   Chip,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import SearchIcon from "@mui/icons-material/Search";
@@ -44,13 +48,11 @@ export const HistorialPagos: React.FC = () => {
   const [mes, setMes] = useState("");
   const [anio, setAnio] = useState<number>(anioActual);
   const [pagos, setPagos] = useState<Pago[]>([]);
-  const [errorMes, setErrorMes] = useState(false);
   const [errorAnio, setErrorAnio] = useState(false);
 
   const handleBuscar = async () => {
     const isMesValid = !!mes;
     const isAnioValid = !!anio;
-    setErrorMes(!isMesValid);
     setErrorAnio(!isAnioValid);
 
     if (!isMesValid || !isAnioValid) {
@@ -73,7 +75,20 @@ export const HistorialPagos: React.FC = () => {
       );
     }
   };
-
+  const meses = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+  ];
   const columns: GridColDef[] = [
     { field: "identificacion", headerName: "Identificación", flex: 1 },
     {
@@ -146,25 +161,27 @@ export const HistorialPagos: React.FC = () => {
       </Grid>
 
       <Grid size={{ xs: 12, md: 4 }}>
-        <TextField
-          fullWidth
-          label="Mes"
-          variant="outlined"
-          type="number"
-          value={mes}
-          onChange={(e) => setMes(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <CalendarMonthIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={textFieldStyle}
-          InputLabelProps={{ sx: labelStyle }}
-          error={errorMes}
-          helperText={errorMes ? "Mes es obligatorio" : ""}
-        />
+        <FormControl fullWidth>
+          <InputLabel sx={labelStyle}>Mes</InputLabel>
+          <Select
+            label="Mes"
+            value={mes}
+            onChange={(e) => setMes(e.target.value)}
+            sx={{
+              ...textFieldStyle,
+              borderRadius: "20px", // Aquí defines el border radius
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderRadius: "20px", // Esto asegura que el borde también sea redondeado
+              },
+            }}
+          >
+            {meses.map((m, index) => (
+              <MenuItem key={index} value={index + 1}>
+                {m}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Grid>
 
       <Grid size={{ xs: 12, md: 4 }}>

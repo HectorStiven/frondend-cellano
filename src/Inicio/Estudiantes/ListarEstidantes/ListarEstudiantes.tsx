@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Grid,
   TextField,
@@ -20,7 +20,6 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
 import GroupIcon from "@mui/icons-material/Group";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import Swal from "sweetalert2";
 
 import { api } from "../../../api/Axios";
@@ -36,6 +35,7 @@ import {
 } from "../CrearEstudiantes/CrearEstudiantesInterfaces";
 import { control_error } from "../../../Elements/alertas/alertaError";
 import { control_success } from "../../../Elements/alertas/alertaSucces";
+import { AlertasContext } from "../../../Elements/Context/ContextModoDark";
 
 interface ApiDeleteResponse {
   success: boolean;
@@ -62,6 +62,8 @@ const initialData = {
 };
 
 export const ListarEstudiantes: React.FC = () => {
+
+  const { modo_update_activo } = useContext(AlertasContext);
   const [formData, setFormData] = useState(initialData);
 
   // Lista que se muestra en la tabla
@@ -137,6 +139,9 @@ export const ListarEstudiantes: React.FC = () => {
   useEffect(() => {
     fetchEstudiantes();
   }, []);
+  useEffect(() => {
+    fetchEstudiantes();
+  }, [modo_update_activo]);
 
   // 🔍 FILTRO
   const aplicarFiltros = () => {
@@ -204,19 +209,19 @@ export const ListarEstudiantes: React.FC = () => {
 }
 
 ,
-    {
-      field: "creditos",
-      headerName: "Créditos",
-      flex: 0.6,
-      renderCell: (params) => (
-        <Chip
-          icon={<AttachMoneyIcon />}
-          label={params.value}
-          color={params.value > 0 ? "success" : "default"}
-          variant="outlined"
-        />
-      ),
-    },
+//     {
+//       field: "creditos",
+//       headerName: "Créditos",
+//       flex: 0.6,
+//       renderCell: (params) => (
+//         <Chip
+//           icon={<AttachMoneyIcon />}
+//           label={params.value}
+//           color={params.value > 0 ? "success" : "default"}
+//           variant="outlined"
+//         />
+//       ),
+//     },
     {
       field: "estado",
       headerName: "Estado",

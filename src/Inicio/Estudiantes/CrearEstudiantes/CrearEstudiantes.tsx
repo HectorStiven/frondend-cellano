@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   Button,
   Grid,
@@ -42,7 +42,11 @@ import {
 import MaleIcon from "@mui/icons-material/Male";
 import FemaleIcon from "@mui/icons-material/Female";
 import TransgenderIcon from "@mui/icons-material/Transgender";
+import { AlertasContext } from "../../../Elements/Context/ContextModoDark";
+
 export const ModalCrearEstudiantes: React.FC = () => {
+
+  const { modo_update_activo, set_modo_update_activo } = useContext(AlertasContext);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<EstudiantesForm>(initialFormState);
   const [grados, setGrados] = useState<Grado[]>([]);
@@ -125,6 +129,7 @@ export const ModalCrearEstudiantes: React.FC = () => {
       control_success("Estudiante creado correctamente");
       console.log(res.data);
       handleClose();
+      set_modo_update_activo(!modo_update_activo);
     } catch (error) {
       control_error("Error al crear estudiante");
       console.error(error);
